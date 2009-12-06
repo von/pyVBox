@@ -14,11 +14,13 @@ This code is far from complete. Use at your own risk.
 No support guarenteed, but I'm happy to receive bug reports or
 suggestions (open an issue please).
 
+This code is released under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
+
 # Installing vboxapi
 
-1. Download and install VirtualBox from  http://www.virtualbox.org/wiki/Downloads
+1. Download and install VirtualBox from [the VirtualBox downloads page](http://www.virtualbox.org/wiki/Downloads).
 
-1. Download the VirtualBox SDK from http://www.virtualbox.org/wiki/Downloads
+1. Download the VirtualBox SDK from [the VirtualBox downloads page](http://www.virtualbox.org/wiki/Downloads).
 
 1. Unzip the SDK somewhere
 
@@ -33,10 +35,21 @@ suggestions (open an issue please).
 
         # python vboxapisetup.py install
 
+# Setting up your environment
+
+You will need to include two paths in your PYTHONPATH environent variable:
+
+1. The pyVBox directory in pyVBox
+
+1. The bindings/xpcom/python/ directory in the VirtualBox SDK distribution.
+
+For example:
+
+    setenv PYTHONPATH `pwd`/pyVBox/:/usr/local/virtualbox/sdk/bindings/xpcom/python/
+
 # Other issues
 
 ## Python Version on the Mac
 
-On Mac, need to use python that came with OS or you will get a "Cannot
-find VBoxPython module" error. See:
-http://forums.virtualbox.org/viewtopic.php?f=8&t=18969
+On Mac, you need to use python that came with OS or you will get a 'Cannot
+find VBoxPython module' error. See [this thread](http://forums.virtualbox.org/viewtopic.php?f=8&t=18969).
