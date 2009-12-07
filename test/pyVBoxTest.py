@@ -23,9 +23,9 @@ class pyVBoxTest(unittest.TestCase):
         # Do machine first to detach any HDs
         machine = self.vbox.openMachine(self.testVMpath)
         if machine.registered():
-            vm = machine.openSession()
-            vm.detachAllDevices()
-            vm.closeSession()
+            machine.openSession()
+            machine.detachAllDevices()
+            machine.closeSession()
             machine.unregister()
         if self.vbox.isHardDiskOpen(self.testHDpath):
             harddisk = self.vbox.findHardDisk(self.testHDpath)

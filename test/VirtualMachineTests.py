@@ -23,10 +23,10 @@ class VirtualMachineTests(pyVBoxTest):
         self.assertRaises(VirtualBoxException,
                           machine.openSession)
         machine.register()
-        vm = machine.openSession()
-        self.assertEqual(True, vm.hasSession())
-        vm.closeSession()
-        self.assertEqual(False, vm.hasSession())
+        machine.openSession()
+        self.assertEqual(True, machine.hasSession())
+        machine.closeSession()
+        self.assertEqual(False, machine.hasSession())
         machine.unregister()
 
     def testAttachDevice(self):
@@ -34,9 +34,9 @@ class VirtualMachineTests(pyVBoxTest):
         machine = self.vbox.openMachine(self.testVMpath)
         machine.register()
         harddisk = self.vbox.openHardDisk(self.testHDpath)
-        vm = machine.openSession()
-        vm.attachDevice(harddisk)
-        vm.detachDevice(harddisk)
-        vm.closeSession()
+        machine.openSession()
+        machine.attachDevice(harddisk)
+        machine.detachDevice(harddisk)
+        machine.closeSession()
         machine.unregister()
         harddisk.close()

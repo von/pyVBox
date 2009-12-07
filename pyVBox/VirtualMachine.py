@@ -10,6 +10,7 @@ class VirtualMachine:
         self._machine = machine
         self._manager = VirtualBoxManager()
         self._session = session
+        self._unmutableMachine = None
 
     def __del__(self):
         self.closeSession()
@@ -57,24 +58,32 @@ class VirtualMachine:
     #
     # Session methods
     #
+
     def openSession(self):
-        """Opens a new direct session with the given virtual machine, returning a new VirtualMachine object.
+        """Opens a new direct session with the given virtual machine.
 
         Machine must be registered."""
         if not self.registered():
             raise VirtualBoxException("Cannot open session to unregistered VM")
         try:
             # XXX Check for existing session?
-            session = self._getManager().openMachineSession(self.getId())
+            self._session = self._getManager().openMachineSession(self.getId())
         except Exception, e:
             raise VirtualBoxException(e)
-        return VirtualMachine(session.machine, session=session)
+        # Replace machine with mutable version, saving unmutable version
+        self._unmutableMachine = self._machine
+        self._machine = self._session.machine
 
     def closeSession(self):
         """Close any open session."""
         if self._session is not None:
             self._session.close()
             self._session = None
+            # Restore unmutable machine from before session open
+            if self._unmutableMachine is None:
+                raise VirtualBoxException("State error: No umutable machine saved")
+            self._machine = self._unmutableMachine
+            self._unmutableMachine = None
 
     def hasSession(self):
         """Does the machine have an open session?"""
