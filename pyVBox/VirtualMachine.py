@@ -3,8 +3,10 @@
 from Constants import Constants
 from VirtualBoxException import VirtualBoxException
 from VirtualBoxManager import VirtualBoxManager
+from Progress import Progress
 
 class VirtualMachine:
+
     def __init__(self, machine, session=None):
         """Return a VirtualMachine wrapper around given IMachine instance"""
         self._machine = machine
@@ -15,6 +17,27 @@ class VirtualMachine:
     def __del__(self):
         self.closeSession()
 
+    # Pointer to the VirtualBox instance
+    # Need to avoid circulat loop
+    _vbox = None
+    
+    @classmethod
+    def setVirtualBox(cls, vbox):
+        """Set class pointer to VirtualBox instance."""
+        cls._vbox = vbox
+
+    #
+    # Top-level controls
+    #
+    def powerOff(self):
+        """Power off a running VM"""
+        self._checkSession()
+        try:
+            console = self._session.console
+            console.powerDown()
+        except Exception, e:
+            raise VirtualBoxException(e)
+
     #
     # Registration methods
     #
@@ -22,7 +45,7 @@ class VirtualMachine:
     def register(self):
         """Registers the machine within this VirtualBox installation."""
         try:
-            vbox = self._getVBox()
+            vbox = self._getIVBox()
             vbox.registerMachine(self._machine)
         except Exception, e:
             raise VirtualBoxException(e)
@@ -30,7 +53,7 @@ class VirtualMachine:
     def unregister(self):
         """Unregisters the machine previously registered using register()."""
         try:
-            vbox = self._getVBox()
+            vbox = self._getIVBox()
             vbox.unregisterMachine(self.getId())
         except Exception, e:
             raise VirtualBoxException(e)
@@ -38,7 +61,7 @@ class VirtualMachine:
     def registered(self):
         """Is this virtual machine registered?"""
         try:
-            self._getVBox().getMachine(self.getId())
+            self._getIVBox().getMachine(self.getId())
         except Exception, e:
             # XXX Should verify exception represents specific error
             return False
@@ -55,6 +78,13 @@ class VirtualMachine:
     def getIMachine(self):
         return self._machine
 
+    def getSession(self):
+        self._checkSession()
+        return self._session
+
+    def getName(self):
+        return self._machine.name
+
     #
     # Session methods
     #
@@ -70,6 +100,25 @@ class VirtualMachine:
             self._session = self._getManager().openMachineSession(self.getId())
         except Exception, e:
             raise VirtualBoxException(e)
+        # Replace machine with mutable version, saving unmutable version
+        self._unmutableMachine = self._machine
+        self._machine = self._session.machine
+
+    def openRemoteSession(self, type="gui", env=""):
+        """Spawns a new process that executes a virtual machine (called a "remote session")."""
+        if not self.registered():
+            raise VirtualBoxException("Cannot open session to unregistered VM")
+        try:
+            self._session = self._getManager().mgr.getSessionObject(self._getIVBox())
+            iprogress = self._getIVBox().openRemoteSession(self._session,
+                                                           self.getId(),
+                                                           type,
+                                                           env)
+            progress = Progress(iprogress)
+            progress.waitForCompletion()
+        except Exception, e:
+            raise e
+            #raise VirtualBoxException(e)
         # Replace machine with mutable version, saving unmutable version
         self._unmutableMachine = self._machine
         self._machine = self._session.machine
@@ -176,6 +225,10 @@ class VirtualMachine:
         """Return the array identified by the given name on this virtual machine."""
         return self._getManager().getArray(self._machine, arrayName)
 
+    def _getIVBox(self):
+        """Return the IVirtualBox object associated with this VirtualMachine."""
+        return self._machine.parent
+
     def _getManager(self):
         """Return the IVirtualBoxManager object associated with this VirtualMachine."""
         return self._manager
@@ -190,7 +243,7 @@ class VirtualMachine:
 
     def _getVBox(self):
         """Return the IVirtualBox object associated with this VirtualMachine."""
-        return self._machine.parent
+        return self._vbox
 
 
 

@@ -12,6 +12,7 @@ class VirtualBox:
     def __init__(self):
         self._manager = VirtualBoxManager()
         self._vbox = self._manager.getIVirtualBox()
+        VirtualMachine.setVirtualBox(self)
 
     #
     # Machine methods
