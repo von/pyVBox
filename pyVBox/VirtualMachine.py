@@ -124,7 +124,7 @@ class VirtualMachine:
         """Detach all devices from the machine."""
         self._checkSession()
         try:
-            attachments = _getMediumAttachments()
+            attachments = self._getMediumAttachments()
             for attachment in attachments:
                 self._machine.detachDevice(attachment.controller,
                                            attachment.port,
