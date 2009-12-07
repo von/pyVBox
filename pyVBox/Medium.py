@@ -13,6 +13,10 @@ class Medium:
         """Return IMedium object."""
         return self._medium
 
+    def getName(self):
+        """Return name"""
+        return self._medium.name
+
     def close(self):
         """Closes this medium."""
         self._medium.close()
