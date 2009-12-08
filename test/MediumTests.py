@@ -2,7 +2,7 @@
 """Unittests for Medium"""
 
 from pyVBoxTest import pyVBoxTest, main
-from pyVBox.VirtualBox import VirtualBox
+from pyVBox.HardDisk import HardDisk
 from pyVBox.VirtualBoxException import VirtualBoxException
 
 class MediumTests(pyVBoxTest):
@@ -10,7 +10,7 @@ class MediumTests(pyVBoxTest):
 
     def testMedium(self):
         """Test Medium basics"""
-        harddisk = self.vbox.openHardDisk("appliances/TestHD.vdi")
+        harddisk = HardDisk.open(self.testHDpath)
         harddisk.getId()
         harddisk.getIMedium()
         harddisk.getName()

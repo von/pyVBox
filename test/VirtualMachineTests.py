@@ -2,6 +2,7 @@
 """Unittests for VirtualMachine"""
 
 from pyVBoxTest import pyVBoxTest, main
+from pyVBox.HardDisk import HardDisk
 from pyVBox.VirtualBoxException import VirtualBoxException
 from pyVBox.VirtualMachine import VirtualMachine
 
@@ -40,7 +41,7 @@ class VirtualMachineTests(pyVBoxTest):
         """Test VirtualMachine.attachDevice() and related functions"""
         machine = VirtualMachine.open(self.testVMpath)
         machine.register()
-        harddisk = self.vbox.openHardDisk(self.testHDpath)
+        harddisk = HardDisk.open(self.testHDpath)
         machine.openSession()
         machine.attachDevice(harddisk)
         machine.detachDevice(harddisk)

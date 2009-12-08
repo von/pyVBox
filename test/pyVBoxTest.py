@@ -2,6 +2,7 @@
 
 import unittest
 
+from pyVBox.HardDisk import HardDisk
 from pyVBox.VirtualBox import VirtualBox
 from pyVBox.VirtualMachine import VirtualMachine
 
@@ -13,14 +14,13 @@ class pyVBoxTest(unittest.TestCase):
     bogusVMpath = "/bogus/path"
 
     def setUp(self):
-        self.vbox = VirtualBox()
         self._cleanup()
 
     def tearDown(self):
         self._cleanup()
 
     def _cleanup(self):
-        # Unregister test HD and VM if they are registered
+        """Unregister test HD and VM if they are registered."""
         # Do machine first to detach any HDs
         machine = VirtualMachine.open(self.testVMpath)
         if machine.registered():
@@ -28,8 +28,8 @@ class pyVBoxTest(unittest.TestCase):
             machine.detachAllDevices()
             machine.closeSession()
             machine.unregister()
-        if self.vbox.isHardDiskOpen(self.testHDpath):
-            harddisk = self.vbox.findHardDisk(self.testHDpath)
+        if HardDisk.isOpen(self.testHDpath):
+            harddisk = HardDisk.find(self.testHDpath)
             harddisk.close()
 
     
