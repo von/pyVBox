@@ -8,27 +8,6 @@ from pyVBox.VirtualBoxException import VirtualBoxException
 class VirtualBoxTests(pyVBoxTest):
     """Test case for VirtualBox"""
 
-
-    def testOpenMachine(self):
-        """Test VirtualBox.openMachine()"""
-        machine = self.vbox.openMachine(self.testVMpath)
-        self.assertRaises(VirtualBoxException, 
-                          self.vbox.openMachine, self.bogusVMpath)
-
-    def testFindMachine(self):
-        """Test VirtualMachine.findMachine()"""
-        self.assertRaises(VirtualBoxException,
-                          self.vbox.findMachine, self.testVMpath)
-        machine = self.vbox.openMachine(self.testVMpath)
-        self.assertRaises(VirtualBoxException,
-                          self.vbox.findMachine, self.testVMpath)
-        machine.register()
-        mach = self.vbox.findMachine(machine.getName())
-        self.assertEqual(mach.getId(), machine.getId())
-        machine.unregister()
-        self.assertRaises(VirtualBoxException,
-                          self.vbox.findMachine, self.testVMpath)
-        
     def testOpenHardDisk(self):
         """Test VirtualBox.openHardDisk()"""
         harddisk = self.vbox.openHardDisk(self.testHDpath)

@@ -5,26 +5,19 @@ from VirtualBoxException import VirtualBoxException
 from VirtualBoxManager import VirtualBoxManager
 from Progress import Progress
 
+import os.path
+
 class VirtualMachine:
+    _manager = VirtualBoxManager()
 
     def __init__(self, machine, session=None):
         """Return a VirtualMachine wrapper around given IMachine instance"""
         self._machine = machine
-        self._manager = VirtualBoxManager()
         self._session = session
         self._unmutableMachine = None
 
     def __del__(self):
         self.closeSession()
-
-    # Pointer to the VirtualBox instance
-    # Need to avoid circulat loop
-    _vbox = None
-    
-    @classmethod
-    def setVirtualBox(cls, vbox):
-        """Set class pointer to VirtualBox instance."""
-        cls._vbox = vbox
 
     #
     # Top-level controls
@@ -39,13 +32,36 @@ class VirtualMachine:
             raise VirtualBoxException(e)
 
     #
+    # Creation methods
+    #
+
+    @classmethod
+    def open(cls, path):
+        """Opens a virtual machine from the existing settings file."""
+        try:
+            path = cls._canonicalizeVMPath(path)
+            machine = cls._getVBox().openMachine(path)
+        except Exception, e:
+            raise VirtualBoxException(e)
+        return VirtualMachine(machine)
+
+    @classmethod
+    def find(cls, vmName):
+        """Attempts to find a virtual machine given its name."""
+        try:
+            machine = cls._getVBox().findMachine(vmName)
+        except Exception, e:
+            raise VirtualBoxException(e)
+        return VirtualMachine(machine)
+        
+    #
     # Registration methods
     #
 
     def register(self):
         """Registers the machine within this VirtualBox installation."""
         try:
-            vbox = self._getIVBox()
+            vbox = self._getVBox()
             vbox.registerMachine(self._machine)
         except Exception, e:
             raise VirtualBoxException(e)
@@ -53,7 +69,7 @@ class VirtualMachine:
     def unregister(self):
         """Unregisters the machine previously registered using register()."""
         try:
-            vbox = self._getIVBox()
+            vbox = self._getVBox()
             vbox.unregisterMachine(self.getId())
         except Exception, e:
             raise VirtualBoxException(e)
@@ -61,7 +77,7 @@ class VirtualMachine:
     def registered(self):
         """Is this virtual machine registered?"""
         try:
-            self._getIVBox().getMachine(self.getId())
+            self._getVBox().getMachine(self.getId())
         except Exception, e:
             # XXX Should verify exception represents specific error
             return False
@@ -109,11 +125,11 @@ class VirtualMachine:
         if not self.registered():
             raise VirtualBoxException("Cannot open session to unregistered VM")
         try:
-            self._session = self._getManager().mgr.getSessionObject(self._getIVBox())
-            iprogress = self._getIVBox().openRemoteSession(self._session,
-                                                           self.getId(),
-                                                           type,
-                                                           env)
+            self._session = self._getManager().mgr.getSessionObject(self._getVBox())
+            iprogress = self._getVBox().openRemoteSession(self._session,
+                                                          self.getId(),
+                                                          type,
+                                                          env)
             progress = Progress(iprogress)
             progress.waitForCompletion()
         except Exception, e:
@@ -203,6 +219,12 @@ class VirtualMachine:
     # Internal utility functions
     #
      
+    @classmethod
+    def _canonicalizeVMPath(cls, path):
+        """Given a path to a VM do any needed clean up."""
+        # path must be absolute path
+        return os.path.abspath(path)
+
     def _checkSession(self):
         """Check that we have a session or throw an exception."""
         # XXX Also check sessionState?
@@ -225,10 +247,6 @@ class VirtualMachine:
         """Return the array identified by the given name on this virtual machine."""
         return self._getManager().getArray(self._machine, arrayName)
 
-    def _getIVBox(self):
-        """Return the IVirtualBox object associated with this VirtualMachine."""
-        return self._machine.parent
-
     def _getManager(self):
         """Return the IVirtualBoxManager object associated with this VirtualMachine."""
         return self._manager
@@ -241,9 +259,10 @@ class VirtualMachine:
         """Return the array of storage controllers associated with this virtual machine."""
         return self._getArray('storageControllers')
 
-    def _getVBox(self):
-        """Return the IVirtualBox object associated with this VirtualMachine."""
-        return self._vbox
+    @classmethod
+    def _getVBox(cls):
+        """Return the VirtualBox object associated with this VirtualMachine."""
+        return cls._manager.getIVirtualBox()
 
 
 

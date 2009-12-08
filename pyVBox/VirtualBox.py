@@ -4,7 +4,6 @@ from Constants import Constants
 from Medium import Medium
 from VirtualBoxException import VirtualBoxException
 from VirtualBoxManager import VirtualBoxManager
-from VirtualMachine import VirtualMachine
 
 import os.path
 
@@ -12,29 +11,6 @@ class VirtualBox:
     def __init__(self):
         self._manager = VirtualBoxManager()
         self._vbox = self._manager.getIVirtualBox()
-        VirtualMachine.setVirtualBox(self)
-
-    #
-    # Machine methods
-    #
-
-    def openMachine(self, path):
-        """Opens a virtual machine from the existing settings file."""
-        try:
-            path = self._canonicalizeVMPath(path)
-            machine = self._vbox.openMachine(path)
-        except Exception, e:
-            raise VirtualBoxException(e)
-        return VirtualMachine(machine)
-
-    def findMachine(self, vmName):
-        """Attempts to find a virtual machine given its name."""
-        # XXX This routine is incomplete
-        try:
-            machine = self._vbox.findMachine(vmName)
-        except Exception, e:
-            raise VirtualBoxException(e)
-        return VirtualMachine(machine)
 
     #
     # HardDisk functions

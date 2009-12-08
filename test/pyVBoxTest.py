@@ -3,6 +3,7 @@
 import unittest
 
 from pyVBox.VirtualBox import VirtualBox
+from pyVBox.VirtualMachine import VirtualMachine
 
 class pyVBoxTest(unittest.TestCase):
     """Base class for all pyVBox unittests."""
@@ -21,7 +22,7 @@ class pyVBoxTest(unittest.TestCase):
     def _cleanup(self):
         # Unregister test HD and VM if they are registered
         # Do machine first to detach any HDs
-        machine = self.vbox.openMachine(self.testVMpath)
+        machine = VirtualMachine.open(self.testVMpath)
         if machine.registered():
             machine.openSession()
             machine.detachAllDevices()
