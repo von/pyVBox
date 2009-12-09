@@ -9,12 +9,16 @@ to hide those changes.
 
 This code is written to the 3.1 version of VirtualBox.
 
-This code is far from complete. Use at your own risk.
-
-No support guarenteed, but I'm happy to receive bug reports or
-suggestions (open an issue please).
+This code is far from complete. Use at your own risk. No support
+guarenteed, but I'm happy to receive bug reports or suggestions (open
+an issue please).
 
 This code is released under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
+
+For examples of use, see test/ and utils/
+
+Kudos to [Nikolay Igotti](http://blogs.sun.com/nike/entry/python_api_to_the_virtualbox)
+and the vboxshell.py example that comes with the Virtualbox SDK.
 
 # Installing vboxapi
 
