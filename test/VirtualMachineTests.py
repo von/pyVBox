@@ -37,6 +37,16 @@ class VirtualMachineTests(pyVBoxTest):
         self.assertEqual(False, machine.hasSession())
         machine.unregister()
 
+    def testSessionDoubleOpen(self):
+        """Testing for error on multiple calls to VirtualMachine.openSession()"""
+        machine = VirtualMachine.open(self.testVMpath)
+        machine.register()
+        machine.openSession()
+        self.assertRaises(VirtualBoxException,
+                          machine.openSession)
+        machine.closeSession()
+        machine.unregister()
+
     def testAttachDevice(self):
         """Test VirtualMachine.attachDevice() and related functions"""
         machine = VirtualMachine.open(self.testVMpath)

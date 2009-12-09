@@ -111,6 +111,8 @@ class VirtualMachine:
         Machine must be registered."""
         if not self.registered():
             raise VirtualBoxException("Cannot open session to unregistered VM")
+        if self._session is not None:
+            raise VirtualBoxException("Attempt to open session when one already open")
         try:
             # XXX Check for existing session?
             self._session = self._getManager().openMachineSession(self.getId())
