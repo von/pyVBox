@@ -13,7 +13,9 @@ problems unmounting the removable drive until the VBox program is
 quit.
 """
 
-from pyVBox.VirtualBox import VirtualBox
+from pyVBox.HardDisk import HardDisk
+from pyVBox.VirtualMachine import VirtualMachine
+
 
 import atexit
 import optparse
@@ -49,8 +51,6 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
 
-    vbox = VirtualBox()
-
     usage = "usage: %prog [options] <vm settings file>"
     version= "%prog 1.0"
     parser = optparse.OptionParser(usage=usage, version=version)
@@ -75,7 +75,7 @@ def main(argv=None):
         parser.error("settings file does not exist")
 
     verboseMsg("Loading VM from \"%s\"" % settingsFile)
-    vm = vbox.openMachine(settingsFile)
+    vm = VirtualMachine.open(settingsFile)
     if vm.registered():
         verboseMsg("Machine \"%s\" already registered."% vm.getName())
     else:
@@ -90,13 +90,13 @@ def main(argv=None):
         atexit.register(vm.closeSession)
         disk = None
         try:
-            disk = vbox.findHardDisk(hddPath)
+            disk = HardDisk.find(hddPath)
             verboseMsg("Harddisk (%s) already loaded" % disk.getName())
         except:
             pass
         if disk is None:
             verboseMsg("Loading hard drive from %s" % hddPath)
-            disk = vbox.openHardDisk(hddPath)
+            disk = HardDisk.open(hddPath)
         atexit.register(disk.close)
         vm.attachDevice(disk)
         atexit.register(cleanupVM, vm)
