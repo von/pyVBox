@@ -150,6 +150,9 @@ class VirtualMachine:
         """Close any open session."""
         if self._session is not None:
             self._session.close()
+            # Wait for session to fully close
+            while self._session.state != Constants.SessionState_Closed:
+                self._getVBox().waitForEvent()
             self._session = None
             # Restore unmutable machine from before session open
             if self._unmutableMachine is None:
