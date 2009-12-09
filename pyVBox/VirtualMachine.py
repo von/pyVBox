@@ -226,6 +226,53 @@ class VirtualMachine:
         self._machine.saveSettings()
 
     #
+    # Monitoring methods
+    #
+
+    def waitForEvent(self):
+        """Wait for some form of event to occurr and return."""
+        callback = self._getManager().createCallback("IConsoleCallback",
+                                                     VirtualMachineMonitor,
+                                                     self._machine)
+        console = self.getConsole()
+        console.registerCallback(callback)
+        try:
+            self._getManager().waitForEvents(-1)
+        except:
+            pass # Ignore
+        finally:
+            console.unregisterCallback(callback)
+
+    def waitUntilRunning(self):
+        """Wait until machine is running."""
+        while not self.isRunning():
+            self.waitForEvent()
+
+    def waitUntilDown(self):
+        """Wait until machine is down (cleanly or not)."""
+        while not self.isDown():
+            self.waitForEvent()
+
+    def getState(self):
+        """Return state of machine."""
+        return self._machine.state
+
+    def isDown(self):
+        """Is machine down (PoweredOff, Aborted)?"""
+        state = self.getState()
+        if ((state == Constants.MachineState_Aborted) or
+            (state == Constants.MachineState_PoweredOff)):
+            return True
+        return False
+
+    def isRunning(self):
+        """Is machine Running?"""
+        state = self.getState()
+        if (state == Constants.MachineState_Running):
+            return True
+        return False
+
+    #
     # Internal utility functions
     #
      
@@ -274,5 +321,59 @@ class VirtualMachine:
         """Return the VirtualBox object associated with this VirtualMachine."""
         return cls._manager.getIVirtualBox()
 
+# Simple implementation of IConsoleCallback
+class VirtualMachineMonitor:
+    def __init__(self, vm):
+        self.vm = vm
 
+    def onMousePointerShapeChange(self, visible, alpha, xHot, yHot,
+                                  width, height, shape):
+        pass
 
+    def onMouseCapabilityChange(self, supportsAbsolute, needsHostCursor):
+        pass
+
+    def onKeyboardLedsChange(self, numLock, capsLock, scrollLock):
+        pass
+
+    def onStateChange(self, state):
+        pass
+
+    def onAdditionsStateChange(self):
+        pass
+
+    def onNetworkAdapterChange(self, adapter):
+        pass
+
+    def onSerialPortChange(self, port):
+        pass
+
+    def onParallelPortChange(self, port):
+        pass
+
+    def onStorageControllerChange(self):
+        pass
+
+    def onMediumChange(self, attachment):
+        pass
+
+    def onVRDPServerChange(self):
+        pass
+
+    def onUSBControllerChange(self):
+        pass
+
+    def onUSBDeviceStateChange(self, device, attached, error):
+        pass
+
+    def onSharedFolderChange(self, scope):
+        pass
+
+    def onRuntimeError(self, fatal, id, message):
+        pass
+
+    def onCanShowWindow(self):
+        return True
+
+    def onShowWindow(self, winId):
+        pass

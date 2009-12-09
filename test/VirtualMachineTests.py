@@ -13,6 +13,7 @@ class VirtualMachineTests(pyVBoxTest):
         """Test VirtualMachine.open()"""
         machine = VirtualMachine.open(self.testVMpath)
         id = machine.getId()
+        self.assertEqual(True, machine.isDown())
 
     def testRegister(self):
         """Test VirtualMachine.register() and related functions"""
