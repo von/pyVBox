@@ -87,6 +87,11 @@ class VirtualMachine:
     # Attribute getters
     #
 
+    def getConsole(self):
+        """Return the console associated with session."""
+        self._checkSession()
+        return self._session.console
+
     def getId(self):
         """Return the UUID of the virtual machine."""
         return self._machine.id
