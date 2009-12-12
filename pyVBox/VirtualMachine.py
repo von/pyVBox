@@ -1,8 +1,7 @@
 """Wrapper around IMachine object"""
 
-from Constants import Constants
 from VirtualBoxException import VirtualBoxException
-from VirtualBoxManager import VirtualBoxManager
+from VirtualBoxManager import Constants, VirtualBoxManager
 from Progress import Progress
 
 import os.path

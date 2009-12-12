@@ -1,8 +1,8 @@
 """Presentation of Medium representing HardDisk"""
 
-from Constants import Constants
 from Medium import Medium
 from VirtualBoxException import VirtualBoxException
+from VirtualBoxManager import Constants
 
 class HardDisk(Medium):
 
