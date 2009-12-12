@@ -1,5 +1,6 @@
 """Wrapper around IMachine object"""
 
+from VirtualBox import VirtualBox
 from VirtualBoxException import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
 from Progress import Progress
@@ -8,6 +9,7 @@ import os.path
 
 class VirtualMachine:
     _manager = VirtualBoxManager()
+    _vbox = VirtualBox()
 
     def __init__(self, machine, session=None):
         """Return a VirtualMachine wrapper around given IMachine instance"""
@@ -39,7 +41,7 @@ class VirtualMachine:
         """Opens a virtual machine from the existing settings file."""
         try:
             path = cls._canonicalizeVMPath(path)
-            machine = cls._getVBox().openMachine(path)
+            machine = cls._vbox.openMachine(path)
         except Exception, e:
             raise VirtualBoxException(e)
         return VirtualMachine(machine)
@@ -48,7 +50,7 @@ class VirtualMachine:
     def find(cls, vmName):
         """Attempts to find a virtual machine given its name."""
         try:
-            machine = cls._getVBox().findMachine(vmName)
+            machine = cls._vbox.findMachine(vmName)
         except Exception, e:
             raise VirtualBoxException(e)
         return VirtualMachine(machine)
@@ -60,23 +62,21 @@ class VirtualMachine:
     def register(self):
         """Registers the machine within this VirtualBox installation."""
         try:
-            vbox = self._getVBox()
-            vbox.registerMachine(self._machine)
+            self._vbox.registerMachine(self._machine)
         except Exception, e:
             raise VirtualBoxException(e)
 
     def unregister(self):
         """Unregisters the machine previously registered using register()."""
         try:
-            vbox = self._getVBox()
-            vbox.unregisterMachine(self.getId())
+            self._vbox.unregisterMachine(self.getId())
         except Exception, e:
             raise VirtualBoxException(e)
 
     def registered(self):
         """Is this virtual machine registered?"""
         try:
-            self._getVBox().getMachine(self.getId())
+            self._vbox.getMachine(self.getId())
         except Exception, e:
             # XXX Should verify exception represents specific error
             return False
@@ -131,11 +131,11 @@ class VirtualMachine:
         if not self.registered():
             raise VirtualBoxException("Cannot open session to unregistered VM")
         try:
-            self._session = self._getManager().mgr.getSessionObject(self._getVBox())
-            iprogress = self._getVBox().openRemoteSession(self._session,
-                                                          self.getId(),
-                                                          type,
-                                                          env)
+            self._session = self._getManager().mgr.getSessionObject(self._vbox)
+            iprogress = self._vbox.openRemoteSession(self._session,
+                                                     self.getId(),
+                                                     type,
+                                                     env)
             progress = Progress(iprogress)
             progress.waitForCompletion()
         except Exception, e:
@@ -151,7 +151,7 @@ class VirtualMachine:
             self._session.close()
             # Wait for session to fully close
             while self._session.state != Constants.SessionState_Closed:
-                self._getVBox().waitForEvent()
+                self._vbox.waitForEvent()
             self._session = None
             # Restore unmutable machine from before session open
             if self._unmutableMachine is None:
@@ -314,11 +314,6 @@ class VirtualMachine:
     def _getStorageControllers(self):
         """Return the array of storage controllers associated with this virtual machine."""
         return self._getArray('storageControllers')
-
-    @classmethod
-    def _getVBox(cls):
-        """Return the VirtualBox object associated with this VirtualMachine."""
-        return cls._manager.getIVirtualBox()
 
 # Simple implementation of IConsoleCallback
 class VirtualMachineMonitor:
