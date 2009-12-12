@@ -20,6 +20,9 @@ class VirtualMachine:
     def __del__(self):
         self.closeSession()
 
+    def __str__(self):
+        return self._machine.name
+
     #
     # Top-level controls
     #
