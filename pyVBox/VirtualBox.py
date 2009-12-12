@@ -12,6 +12,12 @@ class VirtualBox:
         self._manager = VirtualBoxManager()
         self._vbox = self._manager.getIVirtualBox()
 
+    # Pass any requests for unrecognized attributes or methods onto
+    # IVirtualBox object. Doing this this way since I don't kow how
+    # to inherit the XPCOM object directly.
+    def __getattr__(self, attr):
+        return eval("self._vbox." + attr)
+
     def waitForEvent(self):
         """Wait for an event"""
         callback = self._manager.createCallback("IVirtualBoxCallback",
