@@ -27,9 +27,9 @@ class VirtualBox:
 
 class VirtualBoxMonitor:
     def __init__(self, vbox):
-        self.vbox = params[0]
-        self.isMscom = (self._manager.type == 'MSCOM')
-        pass
+        self._vbox = vbox
+        self._manager = VirtualBoxManager()
+        self._isMscom = self._manager.isMSCOM()
 
     def onMachineStateChange(self, id, state):
         pass
@@ -40,7 +40,7 @@ class VirtualBoxMonitor:
     def onExtraDataCanChange(self, id, key, value):
         # Witty COM bridge thinks if someone wishes to return tuple, hresult
         # is one of values we want to return
-        if self.isMscom:
+        if self._isMscom:
             return "", 0, True
         else:
             return True, ""

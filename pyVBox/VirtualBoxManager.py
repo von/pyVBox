@@ -14,3 +14,17 @@ class VirtualBoxManager(vboxapi.VirtualBoxManager):
 
     def getIVirtualBox(self):
         return self.vbox
+
+    def isMSCOM(self):
+        """This this a MSCOM manager?"""
+        return (self.type == 'MSCOM')
+
+class Constants:
+    _manager = VirtualBoxManager()
+    
+    # Pass any request for unrecognized method or attribute on to
+    # XPCOM object. We do this since I don't know how to inherit the
+    # XPCOM class directly.
+    class __metaclass__(type):
+        def __getattr__(cls, name):
+            return eval("cls._manager.constants." + name)
