@@ -29,7 +29,7 @@ class VirtualBox:
         except:
             pass
         finally:
-            self._vbox_unregisterCallback(callback)
+            self._vbox.unregisterCallback(callback)
 
 class VirtualBoxMonitor:
     def __init__(self, vbox):
