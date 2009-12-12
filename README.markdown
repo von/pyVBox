@@ -9,6 +9,9 @@ to hide those changes.
 
 This code is written to the 3.1 version of VirtualBox.
 
+This software is independently created from VirtualBox and Sun. No
+endorsement by Sun or the VirtualBox authors is implied.
+
 This code is far from complete. Use at your own risk. No support
 guarenteed, but I'm happy to receive bug reports or suggestions (open
 an issue please).
