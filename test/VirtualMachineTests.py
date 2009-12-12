@@ -28,14 +28,14 @@ class VirtualMachineTests(pyVBoxTest):
     def testSession(self):
         """Test VirtualMachine.openSession() and related functions"""
         machine = VirtualMachine.open(self.testVMpath)
-        self.assertEqual(False, machine.hasSession())
+        self.assertEqual(False, machine.hasDirectSession())
         self.assertRaises(VirtualBoxException,
                           machine.openSession)
         machine.register()
         machine.openSession()
-        self.assertEqual(True, machine.hasSession())
+        self.assertEqual(True, machine.hasDirectSession())
         machine.closeSession()
-        self.assertEqual(False, machine.hasSession())
+        self.assertEqual(False, machine.hasDirectSession())
         machine.unregister()
 
     def testSessionDoubleOpen(self):

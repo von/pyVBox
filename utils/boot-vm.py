@@ -104,30 +104,23 @@ def main(argv=None):
 
     verboseMsg("Starting VM")
     vm.openRemoteSession()
-    verboseMsg("VM started")
+    # Wait until machine is running or we have a race condition
+    # where it still might be down when we call waitUntilDown()
+    vm.waitUntilRunning()
+    
+    verboseMsg("VM started. Waiting until power down...")
+    vm.waitUntilDown()
 
-    # XXX We really should wait here until user powers down machine
-    # and then clean up. What follows is a hack where we wait 5
-    # sections and then just shut it down.
-    verboseMsg("Sleeping...")
-    from time import sleep
-    sleep(5)
-
-    verboseMsg("Powering down...")
-    vm.powerOff()
+    verboseMsg("VM powered down. Cleaning up...")
     vm.closeSession()
-
-    # Sleep to let system power off. Again, should actually monitor
-    # state.
-    sleep(5)
 
     # atexit functions handle all the clean up
     verboseMsg("Exiting.")
     return 0
 
 def cleanupVM(vm):
-    if not vm.hasSession():
-        vm.openSession()
+    verboseMsg("Cleaning up.")
+    vm.openSession()
     vm.detachAllDevices()
     vm.closeSession()
 

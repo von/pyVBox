@@ -1,9 +1,9 @@
 """Wrapper around IMachine object"""
 
+from Session import Session
 from VirtualBox import VirtualBox
 from VirtualBoxException import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
-from Progress import Progress
 
 import os.path
 
@@ -118,40 +118,33 @@ class VirtualMachine:
         if self._session is not None:
             raise VirtualBoxException("Attempt to open session when one already open")
         try:
-            # XXX Check for existing session?
-            self._session = self._getManager().openMachineSession(self.getId())
+            if self.hasRemoteSession():
+                self._session = Session.openExisting(self)
+            else:
+                self._session = Session.open(self)
         except Exception, e:
-            raise VirtualBoxException(e)
+            raise e
+            #raise VirtualBoxException(e)
         # Replace machine with mutable version, saving unmutable version
         self._unmutableMachine = self._machine
-        self._machine = self._session.machine
+        self._machine = self._session.getIMachine()
 
     def openRemoteSession(self, type="gui", env=""):
         """Spawns a new process that executes a virtual machine (called a "remote session")."""
         if not self.registered():
             raise VirtualBoxException("Cannot open session to unregistered VM")
         try:
-            self._session = self._getManager().mgr.getSessionObject(self._vbox)
-            iprogress = self._vbox.openRemoteSession(self._session,
-                                                     self.getId(),
-                                                     type,
-                                                     env)
-            progress = Progress(iprogress)
-            progress.waitForCompletion()
+            self._session = Session.openRemote(self)
         except Exception, e:
-            raise e
-            #raise VirtualBoxException(e)
+            raise VirtualBoxException(e)
         # Replace machine with mutable version, saving unmutable version
         self._unmutableMachine = self._machine
-        self._machine = self._session.machine
+        self._machine = self._session.getIMachine()
 
     def closeSession(self):
         """Close any open session."""
         if self._session is not None:
             self._session.close()
-            # Wait for session to fully close
-            while self._session.state != Constants.SessionState_Closed:
-                self._vbox.waitForEvent()
             self._session = None
             # Restore unmutable machine from before session open
             if self._unmutableMachine is None:
@@ -159,13 +152,36 @@ class VirtualMachine:
             self._machine = self._unmutableMachine
             self._unmutableMachine = None
 
-    def hasSession(self):
-        """Does the machine have an open session?"""
+    def hasDirectSession(self):
+        """Does the machine have an open direct session?"""
+        return ((self._session is not None) and
+                (self._session.isDirect()))
+
+    def hasRemoteSession(self):
+        """Does the machine have an running remote session?"""
+        state = self.getRemoteSessionState()
+        return ((state == Constants.SessionState_Open) or
+                (state == Constants.SessionState_Spawning) or
+                (state == Constants.SessionState_Closing))
+
+    def isRemoteSessionClosed(self):
+        """Is the remote session closed?"""
+        state = self.getRemoteSessionState()
+        return (state == Constants.SessionState_Closed)
+
+    def getRemoteSessionState(self):
+        """Return the session state of the VM."""
+        # Seems like .sessionState is really remote session state.
+        # Going with that.
+        #
+        # If the VM is transitioning we can get the following error:
+        # Exception: 0x80070005 (The object is not ready)
+        # In this case, punt and return SessionState_Null
         try:
-            self._checkSession()
+            state = self._unmutableMachine.sessionState
         except:
-            return False
-        return True
+            state = Constants.SessionState_Null
+        return state
 
     #
     # Attach methods
