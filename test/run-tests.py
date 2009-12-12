@@ -6,6 +6,7 @@ import unittest
 
 # Modules to test
 modules = [
+    "ConstantsTests",
     "HardDiskTests",
     "MediumTests",
     "VirtualBoxExceptionTests",
