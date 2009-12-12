@@ -12,7 +12,7 @@ class VirtualBox:
         self._manager = VirtualBoxManager()
         self._vbox = self._manager.getIVirtualBox()
 
-    def waitForEvent():
+    def waitForEvent(self):
         """Wait for an event"""
         callback = self._manager.createCallback("IVirtualBoxCallback",
                                                 VirtualBoxMonitor,
