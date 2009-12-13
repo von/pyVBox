@@ -15,13 +15,12 @@ class VirtualMachine:
         """Return a VirtualMachine wrapper around given IMachine instance"""
         self._machine = machine
         self._session = session
-        self._unmutableMachine = None
 
     def __del__(self):
         self.closeSession()
 
     def __str__(self):
-        return self._machine.name
+        return self.getIMachine().name
 
     #
     # Top-level controls
@@ -65,7 +64,7 @@ class VirtualMachine:
     def register(self):
         """Registers the machine within this VirtualBox installation."""
         try:
-            self._vbox.registerMachine(self._machine)
+            self._vbox.registerMachine(self.getIMachine())
         except Exception, e:
             raise VirtualBoxException(e)
 
@@ -96,17 +95,25 @@ class VirtualMachine:
 
     def getId(self):
         """Return the UUID of the virtual machine."""
-        return self._machine.id
+        return self.getIMachine().id
 
     def getIMachine(self):
-        return self._machine
+        """Return wrapped IMachine instance.
+
+        If we have a mutable IMachine associated with a session, return that."""
+        if self.hasSession():
+            return self._getSessionMachine()
+        else:
+            return self._machine
 
     def getSession(self):
         self._checkSession()
         return self._session
 
     def getName(self):
-        return self._machine.name
+        return self.getIMachine().name
+
+
 
     #
     # Session methods
@@ -128,9 +135,6 @@ class VirtualMachine:
         except Exception, e:
             raise e
             #raise VirtualBoxException(e)
-        # Replace machine with mutable version, saving unmutable version
-        self._unmutableMachine = self._machine
-        self._machine = self._session.getIMachine()
 
     def openRemoteSession(self, type="gui", env=""):
         """Spawns a new process that executes a virtual machine (called a "remote session")."""
@@ -140,20 +144,17 @@ class VirtualMachine:
             self._session = Session.openRemote(self, type=type, env=env)
         except Exception, e:
             raise VirtualBoxException(e)
-        # Replace machine with mutable version, saving unmutable version
-        self._unmutableMachine = self._machine
-        self._machine = self._session.getIMachine()
 
     def closeSession(self):
         """Close any open session."""
         if self._session is not None:
             self._session.close()
             self._session = None
-            # Restore unmutable machine from before session open
-            if self._unmutableMachine is None:
-                raise VirtualBoxException("State error: No umutable machine saved")
-            self._machine = self._unmutableMachine
-            self._unmutableMachine = None
+
+    def hasSession(self):
+        """Does the machine have an open session?"""
+        return ((self._session is not None) and
+                (self._session.isOpen()))
 
     def hasDirectSession(self):
         """Does the machine have an open direct session?"""
@@ -181,7 +182,7 @@ class VirtualMachine:
         # Exception: 0x80070005 (The object is not ready)
         # In this case, punt and return SessionState_Null
         try:
-            state = self._unmutableMachine.sessionState
+            state = self.getIMachine().sessionState
         except:
             state = Constants.SessionState_Null
         return state
@@ -201,11 +202,11 @@ class VirtualMachine:
             controllerPort = 0
             device = 0
             deviceType = Constants.DeviceType_HardDisk
-            self._machine.attachDevice(storageController.name,
-                                       controllerPort,
-                                       device,
-                                       deviceType,
-                                       medium.getId())
+            self.getIMachine().attachDevice(storageController.name,
+                                            controllerPort,
+                                            device,
+                                            deviceType,
+                                            medium.getId())
             self.saveSettings()
         except Exception, e:
             raise VirtualBoxException(e)
@@ -215,9 +216,9 @@ class VirtualMachine:
         self._checkSession()
         try:
             attachment = self._findMediumAttachment(device)
-            self._machine.detachDevice(attachment.controller,
-                                       attachment.port,
-                                       attachment.device)
+            self.getIMachine().detachDevice(attachment.controller,
+                                            attachment.port,
+                                            attachment.device)
             self.saveSettings()
         except Exception, e:
             raise VirtualBoxException(e)
@@ -228,9 +229,9 @@ class VirtualMachine:
         try:
             attachments = self._getMediumAttachments()
             for attachment in attachments:
-                self._machine.detachDevice(attachment.controller,
-                                           attachment.port,
-                                           attachment.device)
+                self.getIMachine().detachDevice(attachment.controller,
+                                                attachment.port,
+                                                attachment.device)
             self.saveSettings()
         except Exception, e:
             raise VirtualBoxException(e)
@@ -241,7 +242,7 @@ class VirtualMachine:
 
     def saveSettings(self):
         """Saves any changes to machine settings made since the session has been opened or a new machine has been created, or since the last call to saveSettings or discardSettings."""
-        self._machine.saveSettings()
+        self.getIMachine().saveSettings()
 
     #
     # Monitoring methods
@@ -262,7 +263,7 @@ class VirtualMachine:
 
     def getState(self):
         """Return state of machine."""
-        return self._machine.state
+        return self.getIMachine().state
 
     def isDown(self):
         """Is machine down (PoweredOff, Aborted)?"""
@@ -309,7 +310,7 @@ class VirtualMachine:
 
     def _getArray(self, arrayName):
         """Return the array identified by the given name on this virtual machine."""
-        return self._getManager().getArray(self._machine, arrayName)
+        return self._getManager().getArray(self.getIMachine(), arrayName)
 
     def _getManager(self):
         """Return the IVirtualBoxManager object associated with this VirtualMachine."""
@@ -318,6 +319,10 @@ class VirtualMachine:
     def _getMediumAttachments(self):
         """Return the array of medium attachements on this virtual machine."""
         return self._getArray('mediumAttachments')
+
+    def _getSessionMachine(self):
+        """Return the machine associated with our session."""
+        return self._session.getIMachine()
 
     def _getStorageControllers(self):
         """Return the array of storage controllers associated with this virtual machine."""
