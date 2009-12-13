@@ -70,6 +70,10 @@ class Session(object):
         """Is this session closed?"""
         return (self.getState() == Constants.SessionState_Closed)
 
+    def isOpen(self):
+        """Is this session open?"""
+        return (self.getState() == Constants.SessionState_Open)
+
     @classmethod
     def _createSession(cls):
         """Create and return an ISesison object."""
