@@ -6,6 +6,8 @@ from pyVBox.HardDisk import HardDisk
 from pyVBox.VirtualBoxException import VirtualBoxException
 from pyVBox.VirtualMachine import VirtualMachine
 
+from time import sleep
+
 class VirtualMachineTests(pyVBoxTest):
     """Test case for VirtualMachine"""
 
@@ -59,3 +61,23 @@ class VirtualMachineTests(pyVBoxTest):
         machine.closeSession()
         machine.unregister()
         harddisk.close()
+
+    def testRemoteSession(self):
+        """Test opening a remote session."""
+        machine = VirtualMachine.open(self.testVMpath)
+        machine.register()
+        harddisk = HardDisk.open(self.testHDpath)
+        machine.openSession()
+        machine.attachDevice(harddisk)
+        machine.closeSession()
+        machine.openRemoteSession(type="vrdp")
+        machine.waitUntilRunning()
+        sleep(5)
+        machine.powerOff()
+        machine.waitUntilDown()
+        machine.closeSession()
+        machine.openSession()
+        machine.detachDevice(harddisk)
+        machine.closeSession()       
+        harddisk.close()
+        machine.unregister()
