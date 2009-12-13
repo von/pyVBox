@@ -19,17 +19,7 @@ class VirtualBox:
         return eval("self._vbox." + attr)
 
     def waitForEvent(self):
-        """Wait for an event"""
-        callback = self._manager.createCallback("IVirtualBoxCallback",
-                                                VirtualBoxMonitor,
-                                                self._vbox)
-        self._vbox.registerCallback(callback)
-        try:
-            self._manager.waitForEvents(-1)
-        except:
-            pass
-        finally:
-            self._vbox.unregisterCallback(callback)
+        self._manager.waitForEvents()
 
 class VirtualBoxMonitor:
     def __init__(self, vbox):

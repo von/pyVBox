@@ -248,18 +248,7 @@ class VirtualMachine:
     #
 
     def waitForEvent(self):
-        """Wait for some form of event to occurr and return."""
-        callback = self._getManager().createCallback("IConsoleCallback",
-                                                     VirtualMachineMonitor,
-                                                     self._machine)
-        console = self.getConsole()
-        console.registerCallback(callback)
-        try:
-            self._getManager().waitForEvents(-1)
-        except:
-            pass # Ignore
-        finally:
-            console.unregisterCallback(callback)
+        self._getManager().waitForEvents()
 
     def waitUntilRunning(self):
         """Wait until machine is running."""
