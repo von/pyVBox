@@ -54,6 +54,9 @@ def main(argv=None):
     usage = "usage: %prog [options] <vm settings file>"
     version= "%prog 1.0"
     parser = optparse.OptionParser(usage=usage, version=version)
+    parser.add_option("-G", "--gui",
+                      dest="type", action="store_const", const="gui",
+                      help="Open VM in GUI mode")
     parser.add_option("-H", "--hdd", dest="hdd", action="store",
                       help="mount hdd from FILE", metavar="FILE")
     parser.add_option("-q", "--quiet", dest="verbosityLevel",
@@ -62,6 +65,10 @@ def main(argv=None):
     parser.add_option("-v", "--verbose", dest="verbosityLevel",
                       action="store_const", const=2,
                       help="be verbose")
+    parser.add_option("-V", "--vrdp",
+                      dest="type", action="store_const", const="vrdp",
+                      help="Open VM in VRDP mode")
+    parser.set_defaults(type="gui")
     (options, args) = parser.parse_args()
     if len(args) != 1:
         parser.error("incorrect number of arguments")
@@ -102,8 +109,8 @@ def main(argv=None):
         atexit.register(cleanupVM, vm)
         vm.closeSession()
 
-    verboseMsg("Starting VM")
-    vm.openRemoteSession()
+    verboseMsg("Starting VM in %s mode" % options.type)
+    vm.openRemoteSession(type=options.type)
     # Wait until machine is running or we have a race condition
     # where it still might be down when we call waitUntilDown()
     vm.waitUntilRunning()
