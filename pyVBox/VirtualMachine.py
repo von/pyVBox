@@ -137,7 +137,7 @@ class VirtualMachine:
         if not self.registered():
             raise VirtualBoxException("Cannot open session to unregistered VM")
         try:
-            self._session = Session.openRemote(self)
+            self._session = Session.openRemote(self, type=type, env=env)
         except Exception, e:
             raise VirtualBoxException(e)
         # Replace machine with mutable version, saving unmutable version
@@ -371,6 +371,9 @@ class VirtualMachineMonitor:
         pass
 
     def onVRDPServerChange(self):
+        pass
+
+    def onRemoteDisplayInfoChange(self):
         pass
 
     def onUSBControllerChange(self):
