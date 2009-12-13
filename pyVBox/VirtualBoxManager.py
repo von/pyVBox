@@ -12,6 +12,15 @@ class VirtualBoxManager(vboxapi.VirtualBoxManager):
         except Exception, e:
             raise VirtualBoxException(e)
 
+    def waitForEvents(self, timeout=None):
+        """Wait for an event.
+
+        Timeout is in miliseconds (I think)."""
+        if timeout is None:
+            # No timeout
+            timeout = 0
+        vboxapi.VirtualBoxManager.waitForEvents(self, timeout)
+
     def getIVirtualBox(self):
         return self.vbox
 
