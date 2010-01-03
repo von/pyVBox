@@ -178,6 +178,11 @@ class VirtualMachine:
         state = self.getRemoteSessionState()
         return (state == Constants.SessionState_Closed)
 
+    def waitForRemoteSessionClose(self):
+        """Wait for remote session to close."""
+        while not self._vm.isRemoteSessionClosed():
+            self._vbox.waitForEvent()
+
     def getRemoteSessionState(self):
         """Return the session state of the VM."""
         # Seems like .sessionState is really remote session state.
