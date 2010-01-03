@@ -129,9 +129,11 @@ class VirtualMachine:
 
         Machine must be registered."""
         if not self.registered():
-            raise VirtualBoxException.VirtualBoxInvalidVMStateException()
+            raise VirtualBoxException.VirtualBoxInvalidVMStateException(
+                "VM is not registered")
         if self._session is not None:
-            raise VirtualBoxException.VirtualBoxInvalidSessionStateException()
+            raise VirtualBoxException.VirtualBoxInvalidSessionStateException(
+                "VM has no open session")
         try:
             if self.hasRemoteSession():
                 self._session = Session.openExisting(self)
@@ -144,11 +146,13 @@ class VirtualMachine:
     def openRemoteSession(self, type="gui", env=""):
         """Spawns a new process that executes a virtual machine (called a "remote session")."""
         if not self.registered():
-            raise VirtualBoxException.VirtualBoxInvalidVMStateException()
+            raise VirtualBoxException.VirtualBoxInvalidVMStateException(
+                "VM is not registered")
         try:
             self._session = Session.openRemote(self, type=type, env=env)
         except Exception, e:
-            raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
 
     def closeSession(self):
         """Close any open session."""
@@ -307,7 +311,8 @@ class VirtualMachine:
         """Check that we have a session or throw an exception."""
         # XXX Also check sessionState?
         if self._session is None:
-            raise VirtualBoxException.VirtualBoxInvalidVMStateException()
+            raise VirtualBoxException.VirtualBoxInvalidVMStateException(
+                "VM has no open session")
 
     def _findMediumAttachment(self, device):
         """Given a device, find the IMediumAttachment object associated with its attachment on this machine."""
@@ -315,7 +320,9 @@ class VirtualMachine:
         for attachment in mediumAttachments:
             if attachment.medium.id == device.getId():
                 return attachment
-        raise VirtualBoxException.VirtualBoxPluggableDeviceManagerError()
+        raise VirtualBoxException.VirtualBoxPluggableDeviceManagerError(
+            "No attachment for device \"%s\" on VM \"%s\" found" % (device,
+                                                                    self))
 
     #
     # Internal attribute getters
