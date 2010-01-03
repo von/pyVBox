@@ -46,13 +46,16 @@ and the vboxshell.py example that comes with the Virtualbox SDK.
 
 You will need to include two paths in your PYTHONPATH environent variable:
 
-1. The pyVBox directory in pyVBox
+1. The directory containing the pyVBox module directory. I.e. the
+directory in which you found this README.
 
-1. The bindings/xpcom/python/ directory in the VirtualBox SDK distribution.
+1. The bindings/xpcom/python/ directory in the VirtualBox SDK distribution. 
 
-For example:
+For example (assuming your current directory is the one where you
+found this README file, and you unpacked the VirtualBox SDK to
+/usr/local/virtualbox-sdk):
 
-    setenv PYTHONPATH `pwd`/pyVBox/:/usr/local/virtualbox/sdk/bindings/xpcom/python/
+    setenv PYTHONPATH `pwd`:/usr/local/virtualbox-sdk/bindings/xpcom/python/
 
 # Other issues
 
