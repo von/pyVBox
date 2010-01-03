@@ -39,6 +39,17 @@ class VirtualMachine:
         if wait:
             self.waitUntilDown()
 
+    def eject(self):
+        """Do what ever it takes to unregister the VM"""
+        if self.isRunning():
+            if not self.hasSession():
+                self.openSession()
+            self.powerOff(wait=True)
+            self.closeSession()
+            self.waitForRemoteSessionClose()
+        if self.registered():
+            self.unregister()
+
     #
     # Creation methods
     #
