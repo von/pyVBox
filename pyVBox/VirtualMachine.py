@@ -25,8 +25,10 @@ class VirtualMachine:
     #
     # Top-level controls
     #
-    def powerOff(self):
-        """Power off a running VM"""
+    def powerOff(self, wait=False):
+        """Power off a running VM.
+
+        If wait is True, then wait for power down to complete."""
         self._checkSession()
         try:
             console = self._session.console
@@ -34,6 +36,8 @@ class VirtualMachine:
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
+        if wait:
+            self.waitUntilDown()
 
     #
     # Creation methods
