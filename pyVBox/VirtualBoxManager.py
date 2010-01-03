@@ -1,8 +1,7 @@
 """Wrapper around vboxapi.VirtualBoxManager"""
 
 import vboxapi
-
-from VirtualBoxException import VirtualBoxException
+import VirtualBoxException
 
 class VirtualBoxManager(vboxapi.VirtualBoxManager):
 
@@ -10,7 +9,8 @@ class VirtualBoxManager(vboxapi.VirtualBoxManager):
         try:
             vboxapi.VirtualBoxManager.__init__(self, style, params)
         except Exception, e:
-            raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
 
     def waitForEvents(self, timeout=None):
         """Wait for an event.
@@ -19,7 +19,12 @@ class VirtualBoxManager(vboxapi.VirtualBoxManager):
         if timeout is None:
             # No timeout
             timeout = 0
-        vboxapi.VirtualBoxManager.waitForEvents(self, timeout)
+        try:
+            vboxapi.VirtualBoxManager.waitForEvents(self, timeout)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+
 
     def getIVirtualBox(self):
         return self.vbox

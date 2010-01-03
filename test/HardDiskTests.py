@@ -3,7 +3,7 @@
 
 from pyVBoxTest import pyVBoxTest, main
 from pyVBox.HardDisk import HardDisk
-from pyVBox.VirtualBoxException import VirtualBoxException
+import pyVBox.VirtualBoxException
 
 class HardDiskTests(pyVBoxTest):
     """Test case for HardDisk"""
@@ -15,8 +15,9 @@ class HardDiskTests(pyVBoxTest):
 
     def testFind(self):
         """Test HardDisk.find()"""
-        self.assertRaises(VirtualBoxException, 
-                          HardDisk.find, self.bogusHDpath)
+        self.assertRaises(
+            pyVBox.VirtualBoxException.VirtualBoxObjectNotFoundException,
+            HardDisk.find, self.bogusHDpath)
         harddisk = HardDisk.open(self.testHDpath)
         hd = HardDisk.find(self.testHDpath)
         self.assertEqual(harddisk.getId(), hd.getId())

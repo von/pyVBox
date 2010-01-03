@@ -3,7 +3,7 @@
 
 from pyVBoxTest import pyVBoxTest, main
 from pyVBox.HardDisk import HardDisk
-from pyVBox.VirtualBoxException import VirtualBoxException
+import pyVBox.VirtualBoxException
 from pyVBox.VirtualMachine import VirtualMachine
 
 from time import sleep
@@ -31,8 +31,9 @@ class VirtualMachineTests(pyVBoxTest):
         """Test VirtualMachine.openSession() and related functions"""
         machine = VirtualMachine.open(self.testVMpath)
         self.assertEqual(False, machine.hasDirectSession())
-        self.assertRaises(VirtualBoxException,
-                          machine.openSession)
+        self.assertRaises(
+            pyVBox.VirtualBoxException.VirtualBoxInvalidVMStateException,
+            machine.openSession)
         machine.register()
         machine.openSession()
         self.assertEqual(True, machine.hasDirectSession())
@@ -45,8 +46,9 @@ class VirtualMachineTests(pyVBoxTest):
         machine = VirtualMachine.open(self.testVMpath)
         machine.register()
         machine.openSession()
-        self.assertRaises(VirtualBoxException,
-                          machine.openSession)
+        self.assertRaises(
+            pyVBox.VirtualBoxException.VirtualBoxInvalidSessionStateException,
+            machine.openSession)
         machine.closeSession()
         machine.unregister()
 

@@ -1,9 +1,8 @@
 """Wrapper around ISession object"""
 
-# TODO: Wrap return exceptions in VirtualBoxExceptions
-
 from Progress import Progress
 from VirtualBox import VirtualBox
+import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
 
 class Session(object):
@@ -26,33 +25,49 @@ class Session(object):
     @classmethod
     def open(cls, vm):
         """Opens a new direct session with the given virtual machine."""
-        isession = cls._createSession()
-        cls._vbox.openSession(isession, vm.getId())
+        try:
+            isession = cls._createSession()
+            cls._vbox.openSession(isession, vm.getId())
+        except Exception, ex:
+            VirtualBoxException.handle_exception(ex)
+            raise
         return Session(isession, vm)
 
     @classmethod
     def openExisting(cls, vm):
         """Opens a new remote session with the virtual machine for which a direct session is already open."""
-        isession = cls._createSession()
-        cls._vbox.openExistingSession(isession, vm.getId())
+        try:
+            isession = cls._createSession()
+            cls._vbox.openExistingSession(isession, vm.getId())
+        except Exception, ex:
+            VirtualBoxException.handle_exception(ex)
+            raise
         return Session(isession, vm)
 
     @classmethod
     def openRemote(cls, vm, type="gui", env=""):
         """Spawns a new process that executes a virtual machine (called a "remote session")."""
-        isession = cls._createSession()
-        iprogress = cls._vbox.openRemoteSession(isession,
-                                                vm.getId(),
-                                                type,
-                                                env)
-        progress = Progress(iprogress)
-        progress.waitForCompletion()
+        try:
+            isession = cls._createSession()
+            iprogress = cls._vbox.openRemoteSession(isession,
+                                                    vm.getId(),
+                                                    type,
+                                                    env)
+            progress = Progress(iprogress)
+            progress.waitForCompletion()
+        except Exception, ex:
+            VirtualBoxException.handle_exception(ex)
+            raise
         return RemoteSession(isession, vm)
 
     def close(self):
         """Close any open session."""
         if not self.isClosed():
-            self._session.close()
+            try:
+                self._session.close()
+            except Exception, ex:
+                VirtualBoxException.handle_exception(ex)
+                raise
 
     def getIMachine(self):
         """Return mutable IMachine object associated with session."""
@@ -85,6 +100,10 @@ class RemoteSession(Session):
     def close(self):
         """Close remote session and wait until VM state reflects this."""
         if not self.isClosed():
-            super(RemoteSession, self).close()
-            while not self._vm.isRemoteSessionClosed():
-                self._vbox.waitForEvent()
+            try:
+                super(RemoteSession, self).close()
+                while not self._vm.isRemoteSessionClosed():
+                    self._vbox.waitForEvent()
+            except Exception, ex:
+                VirtualBoxException.handle_exception(ex)
+                raise

@@ -1,7 +1,7 @@
 """Presentation of Medium representing HardDisk"""
 
 from Medium import Medium
-from VirtualBoxException import VirtualBoxException
+import VirtualBoxException
 from VirtualBoxManager import Constants
 
 class HardDisk(Medium):
@@ -23,7 +23,8 @@ class HardDisk(Medium):
                                                  setImageId, imageId,
                                                  setParentId, parentId)
         except Exception, e:
-            raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
         return Medium(medium)
 
     @classmethod
@@ -33,7 +34,8 @@ class HardDisk(Medium):
             path = cls._canonicalizeMediumPath(path)
             medium = cls._getVBox().findHardDisk(path)
         except Exception, e:
-            raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
         return Medium(medium)
 
     #

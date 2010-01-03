@@ -2,7 +2,7 @@
 
 from Session import Session
 from VirtualBox import VirtualBox
-from VirtualBoxException import VirtualBoxException
+import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
 
 import os.path
@@ -32,7 +32,8 @@ class VirtualMachine:
             console = self._session.console
             console.powerDown()
         except Exception, e:
-            raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
 
     #
     # Creation methods
@@ -45,7 +46,8 @@ class VirtualMachine:
             path = cls._canonicalizeVMPath(path)
             machine = cls._vbox.openMachine(path)
         except Exception, e:
-            raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
         return VirtualMachine(machine)
 
     @classmethod
@@ -54,7 +56,8 @@ class VirtualMachine:
         try:
             machine = cls._vbox.findMachine(vmName)
         except Exception, e:
-            raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
         return VirtualMachine(machine)
         
     #
@@ -66,14 +69,16 @@ class VirtualMachine:
         try:
             self._vbox.registerMachine(self.getIMachine())
         except Exception, e:
-            raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
 
     def unregister(self):
         """Unregisters the machine previously registered using register()."""
         try:
             self._vbox.unregisterMachine(self.getId())
         except Exception, e:
-            raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
 
     def registered(self):
         """Is this virtual machine registered?"""
@@ -124,22 +129,22 @@ class VirtualMachine:
 
         Machine must be registered."""
         if not self.registered():
-            raise VirtualBoxException("Cannot open session to unregistered VM")
+            raise VirtualBoxException.VirtualBoxInvalidVMStateException()
         if self._session is not None:
-            raise VirtualBoxException("Attempt to open session when one already open")
+            raise VirtualBoxException.VirtualBoxInvalidSessionStateException()
         try:
             if self.hasRemoteSession():
                 self._session = Session.openExisting(self)
             else:
                 self._session = Session.open(self)
         except Exception, e:
-            raise e
-            #raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
 
     def openRemoteSession(self, type="gui", env=""):
         """Spawns a new process that executes a virtual machine (called a "remote session")."""
         if not self.registered():
-            raise VirtualBoxException("Cannot open session to unregistered VM")
+            raise VirtualBoxException.VirtualBoxInvalidVMStateException()
         try:
             self._session = Session.openRemote(self, type=type, env=env)
         except Exception, e:
@@ -209,7 +214,8 @@ class VirtualMachine:
                                             medium.getId())
             self.saveSettings()
         except Exception, e:
-            raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
 
     def detachDevice(self, device):
         """Detach the device from the machine."""
@@ -221,7 +227,8 @@ class VirtualMachine:
                                             attachment.device)
             self.saveSettings()
         except Exception, e:
-            raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
 
     def detachAllDevices(self):
         """Detach all devices from the machine."""
@@ -234,7 +241,8 @@ class VirtualMachine:
                                                 attachment.device)
             self.saveSettings()
         except Exception, e:
-            raise VirtualBoxException(e)
+            VirtualBoxException.handle_exception(e)
+            raise
 
     #
     # Settings functions
@@ -294,7 +302,7 @@ class VirtualMachine:
         """Check that we have a session or throw an exception."""
         # XXX Also check sessionState?
         if self._session is None:
-            raise VirtualBoxException("No session established")
+            raise VirtualBoxException.VirtualBoxInvalidVMStateException()
 
     def _findMediumAttachment(self, device):
         """Given a device, find the IMediumAttachment object associated with its attachment on this machine."""
@@ -302,7 +310,7 @@ class VirtualMachine:
         for attachment in mediumAttachments:
             if attachment.medium.id == device.getId():
                 return attachment
-        raise VirtualBoxException("Device (%s) is not attached to machine" % device)
+        raise VirtualBoxException.VirtualBoxPluggableDeviceManagerError()
 
     #
     # Internal attribute getters

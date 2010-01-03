@@ -1,5 +1,7 @@
 """Wrapper around IProgress object"""
 
+import VirtualBoxException
+
 class Progress:
     WaitIndefinite = -1
 
@@ -15,7 +17,10 @@ Timeout is in milliseconds. specify None for an indefinite wait."""
             timeout = self.WaitIndefinite
         self._progress.waitForCompletion(timeout)
         if not self._progress.completed:
-            raise VirtualMachineException("Error starting VM: %s (%d)" % 
-                                          (self._progress.errorInfo.text,
-                                           self._progress.resultCode))
+            # TODO: This is obly an error if we were waiting indefinitely?
+            # TODO: This is not the right exception to return.
+            raise VirtualBoxException.VirtualBoxException(
+                "Error starting VM: %s (%d)" % 
+                (self._progress.errorInfo.text,
+                 self._progress.resultCode))
 
