@@ -142,7 +142,7 @@ The function should be used as follows:
             # information, but with new class.
             cls = EXCEPTION_MAPPINGS[errno]
             exc_info = sys.exc_info()
-            raise cls, exc_info[1], exc_info[2]
+            raise cls, ex.msg, exc_info[2]
     # Else we don't have or don't recognize the errno, return and allow
     # original code to re-raise exception.
 
