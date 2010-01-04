@@ -199,8 +199,8 @@ class VirtualMachine:
 
     def waitForRemoteSessionClose(self):
         """Wait for remote session to close."""
-        while not self._vm.isRemoteSessionClosed():
-            self._vbox.waitForEvent()
+        while not self.isRemoteSessionClosed():
+            self.waitForEvent()
 
     def getRemoteSessionState(self):
         """Return the session state of the VM."""
