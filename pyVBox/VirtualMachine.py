@@ -41,14 +41,17 @@ class VirtualMachine:
 
     def eject(self):
         """Do what ever it takes to unregister the VM"""
+        if not self.registered():
+            # Nothing to do
+            return
+        if not self.hasSession():
+            self.openSession()
         if self.isRunning():
-            if not self.hasSession():
-                self.openSession()
             self.powerOff(wait=True)
-            self.closeSession()
-            self.waitForRemoteSessionClose()
-        if self.registered():
-            self.unregister()
+        self.detachAllDevices()
+        self.closeSession()
+        self.waitForRemoteSessionClose()
+        self.unregister()
 
     #
     # Creation methods

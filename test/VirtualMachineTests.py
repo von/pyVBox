@@ -64,6 +64,18 @@ class VirtualMachineTests(pyVBoxTest):
         machine.unregister()
         harddisk.close()
 
+    def testEject(self):
+        """Test VirtualMachine.eject()"""
+        machine = VirtualMachine.open(self.testVMpath)
+        machine.register()
+        harddisk = HardDisk.open(self.testHDpath)
+        machine.openSession()
+        machine.attachDevice(harddisk)
+        self.assertEqual(True, machine.registered())
+        machine.eject()
+        self.assertEqual(False, machine.registered())
+        harddisk.close()
+
     def testRemoteSession(self):
         """Test opening a remote session."""
         machine = VirtualMachine.open(self.testVMpath)
