@@ -59,7 +59,9 @@ class VirtualMachine:
 
     @classmethod
     def open(cls, path):
-        """Opens a virtual machine from the existing settings file."""
+        """Opens a virtual machine from the existing settings file.
+
+        Throws VirtualBoxFileNotFoundException if file not found."""
         try:
             path = cls._canonicalizeVMPath(path)
             machine = cls._vbox.openMachine(path)

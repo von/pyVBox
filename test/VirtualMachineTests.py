@@ -17,6 +17,12 @@ class VirtualMachineTests(pyVBoxTest):
         id = machine.getId()
         self.assertEqual(True, machine.isDown())
 
+    def testOpenNotFound(self):
+        """Test VirtualMachine.open() with not found file"""
+        self.assertRaises(
+            pyVBox.VirtualBoxException.VirtualBoxFileNotFoundException,
+            VirtualMachine.open, self.bogusVMpath)
+
     def testRegister(self):
         """Test VirtualMachine.register() and related functions"""
         machine = VirtualMachine.open(self.testVMpath)

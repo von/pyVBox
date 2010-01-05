@@ -45,6 +45,9 @@ VBOX_E_OBJECT_IN_USE = 0x80BB000C
 ######################################################################
 # Constants I've found experimentally. Names are of my own creation.
 
+# Returned when open() method doesn't fine a file
+VBOX_E_FILE_NOT_FOUND = 0x80004005
+
 XPCOM_E_INVALID_SESSION_TYPE = 0x80070057
 
 ######################################################################
@@ -101,6 +104,10 @@ class VirtualBoxObjectInUseException(VirtualBoxException):
     """Object being in use prohibits operation."""
     errno = VBOX_E_OBJECT_IN_USE
 
+class VirtualBoxFileNotFoundException(VirtualBoxException):
+    """File not found."""
+    errno = VBOX_E_FILE_NOT_FOUND
+
 class VirtualBoxInvalidSessionType(VirtualBoxException):
     """Invalid session type."""
     errno = XPCOM_E_INVALID_SESSION_TYPE
@@ -119,6 +126,7 @@ EXCEPTION_MAPPINGS = {
     VBOX_E_XML_ERROR             : VirtualBoxInvalidXMLError,
     VBOX_E_INVALID_SESSION_STATE : VirtualBoxInvalidSessionStateException,
     VBOX_E_OBJECT_IN_USE         : VirtualBoxObjectInUseException,
+    VBOX_E_FILE_NOT_FOUND        : VirtualBoxFileNotFoundException,
     XPCOM_E_INVALID_SESSION_TYPE : VirtualBoxInvalidSessionType,
     }
 

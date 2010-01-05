@@ -13,6 +13,12 @@ class HardDiskTests(pyVBoxTest):
         harddisk = HardDisk.open(self.testHDpath)
         harddisk.close()
 
+    def testOpenNotFound(self):
+        """Test HardDisk.open() with not found file"""
+        self.assertRaises(
+            pyVBox.VirtualBoxException.VirtualBoxFileError,
+            HardDisk.open, self.bogusHDpath)
+
     def testFind(self):
         """Test HardDisk.find()"""
         self.assertRaises(

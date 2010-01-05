@@ -13,7 +13,9 @@ class HardDisk(Medium):
     def open(cls, path, accessMode = None,
              setImageId=False, imageId="",
              setParentId=False, parentId=""):
-        """Opens a hard disk from an existing location, optionally replacing the image UUID and/or parent UUID."""
+        """Opens a hard disk from an existing location, optionally replacing the image UUID and/or parent UUID.
+
+        Throws VirtualBoxFileError if file not found."""
         try:
             if accessMode is None:
                 accessMode = Constants.AccessMode_ReadWrite
