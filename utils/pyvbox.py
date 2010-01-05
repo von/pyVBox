@@ -3,6 +3,7 @@
 """
 
 import pyVBox.VirtualBoxException
+from pyVBox.HardDisk import HardDisk
 from pyVBox.VirtualMachine import VirtualMachine
 
 import atexit
@@ -64,6 +65,31 @@ class Command:
         """Given a name, return associated registered command class"""
         return cls.registered_commands[name]
 
+class AttachCommand(Command):
+    """Attach hard disks to a virtual machine"""
+    usage = "attach <VM name> <HD files>"
+  
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        if len(args) < 1:
+            raise Exception("Missing virtual machine argument")
+        vm = VirtualMachine.find(args.pop(0))
+        if len(args) < 1:
+            raise Exception("Missing hard disk filenames")
+        vm.openSession()
+        for hd in args:
+            if HardDisk.isRegistered(hd):
+                hd = HardDisk.find(hd)
+            else:
+                hd = HardDisk.open(hd)
+            verboseMsg("Attaching %s" % hd)
+            vm.attachDevice(hd)
+        vm.closeSession()
+        return 1
+
+Command.register_command("attach", AttachCommand)
+    
 class BootVMCommand(Command):
     """Boot a virtual machine and eject it after power down"""
     usage = "boot <VM settings file> [<HD files>]"
@@ -133,6 +159,61 @@ class HelpCommand(Command):
                 message("%10s: %s" % (name, cmd.__doc__))
 
 Command.register_command("help", HelpCommand)
+
+class RegisterCommand(Command):
+    """Register a VM"""
+    usage = "register [<VM settings filenames>]"
+
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        if len(args) == 0:
+            raise Exception("Missing virtual machine name argument");
+        for filename in args:
+            vm = VirtualMachine.open(args.pop(0))
+            if vm.registered():
+                errorMsg("VM \"%s\" is already registered." % vm)
+            else:
+                verboseMsg("Registering VM %s" % vm)
+                vm.register()
+        return 0
+
+Command.register_command("register", RegisterCommand)
+
+class StartCommand(Command):
+    """Start a VM"""
+    usage = "start <VM name>"
+
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        mode = "gui"
+        if len(args) == 0:
+            raise Exception("Missing virtual machine name argument");
+        vm = VirtualMachine.find(args.pop(0))
+        vm.openRemoteSession(type=mode)
+
+Command.register_command("start", StartCommand)
+
+class UnregisterCommand(Command):
+    """Unregister a VM"""
+    usage = "unregister [<VM settings filenames>]"
+
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        if len(args) == 0:
+            raise Exception("Missing virtual machine name argument");
+        for filename in args:
+            vm = VirtualMachine.find(args.pop(0))
+            if vm.registered():
+                verboseMsg("Unregistering VM %s" % vm)
+                vm.unregister()
+            else:
+                errorMsg("VM \"%s\" is not registered." % vm)
+        return 0
+
+Command.register_command("unregister", UnregisterCommand)
 
 #----------------------------------------------------------------------
 
