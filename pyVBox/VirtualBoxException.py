@@ -2,6 +2,7 @@
 
 import sys
 
+######################################################################
 # Constants from IDL file. I can't find a way to programmatically
 # get at these through the python API.
 
@@ -40,6 +41,13 @@ VBOX_E_INVALID_SESSION_STATE = 0x80BB000B
 
 # Object being in use prohibits operation. 
 VBOX_E_OBJECT_IN_USE = 0x80BB000C
+
+######################################################################
+# Constants I've found experimentally. Names are of my own creation.
+
+XPCOM_E_INVALID_SESSION_TYPE = 0x80070057
+
+######################################################################
 
 class VirtualBoxException(Exception):
     """Base exception for pyVBox exceptions."""
@@ -93,6 +101,9 @@ class VirtualBoxObjectInUseException(VirtualBoxException):
     """Object being in use prohibits operation."""
     errno = VBOX_E_OBJECT_IN_USE
 
+class VirtualBoxInvalidSessionType(VirtualBoxException):
+    """Invalid session type."""
+    errno = XPCOM_E_INVALID_SESSION_TYPE
 
 # Mappings from VirtualBox error numbers to pyVBox classes
 EXCEPTION_MAPPINGS = {
@@ -108,6 +119,7 @@ EXCEPTION_MAPPINGS = {
     VBOX_E_XML_ERROR             : VirtualBoxInvalidXMLError,
     VBOX_E_INVALID_SESSION_STATE : VirtualBoxInvalidSessionStateException,
     VBOX_E_OBJECT_IN_USE         : VirtualBoxObjectInUseException,
+    XPCOM_E_INVALID_SESSION_TYPE : VirtualBoxInvalidSessionType,
     }
 
 def handle_exception(ex):
