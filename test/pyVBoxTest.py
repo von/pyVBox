@@ -28,7 +28,7 @@ class pyVBoxTest(unittest.TestCase):
             machine.detachAllDevices()
             machine.closeSession()
             machine.unregister()
-        if HardDisk.isOpen(self.testHDpath):
+        if HardDisk.isRegistered(self.testHDpath):
             harddisk = HardDisk.find(self.testHDpath)
             harddisk.close()
 

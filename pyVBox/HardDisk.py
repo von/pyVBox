@@ -42,8 +42,8 @@ class HardDisk(Medium):
     # Utility methods
     #
     @classmethod
-    def isOpen(cls, path):
-        """Is a hard disk that used the given path already registered?"""
+    def isRegistered(cls, path):
+        """Is a hard disk at the given path already registered?"""
         try:
             cls.find(path)
         except Exception, e:
