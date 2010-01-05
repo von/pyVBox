@@ -99,7 +99,8 @@ Command.register_command("boot", BootVMCommand)
 
 class EjectCommand(Command):
     """Eject a virtual machine"""
-    
+    usage = "boot <VM name>"
+
     @classmethod
     def invoke(cls, args):
         """Invoke the command. Return exit code for program."""
@@ -115,6 +116,7 @@ Command.register_command("eject", EjectCommand)
 
 class HelpCommand(Command):
     """Provide help"""
+    usage = "help [<commands>]"
 
     @classmethod
     def invoke(cls, args):
@@ -123,6 +125,7 @@ class HelpCommand(Command):
             for name in args:
                 cmd = Command.lookup_command_by_name(name)
                 message("%10s: %s" % (name, cmd.__doc__))
+                message("%10s  usage: %s" % ("", cmd.usage))
         else:
             message("Available commands:")
             for name in Command.registered_commands:
