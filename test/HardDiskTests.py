@@ -18,7 +18,10 @@ class HardDiskTests(pyVBoxTest):
         self.assertRaises(
             pyVBox.VirtualBoxException.VirtualBoxObjectNotFoundException,
             HardDisk.find, self.bogusHDpath)
+        self.assertEqual(False, HardDisk.isRegistered(self.testHDpath))
         harddisk = HardDisk.open(self.testHDpath)
+        self.assertEqual(True, HardDisk.isRegistered(self.testHDpath))
         hd = HardDisk.find(self.testHDpath)
         self.assertEqual(harddisk.getId(), hd.getId())
         harddisk.close()
+        self.assertEqual(False, HardDisk.isRegistered(self.testHDpath))
