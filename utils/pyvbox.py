@@ -160,6 +160,24 @@ class HelpCommand(Command):
 
 Command.register_command("help", HelpCommand)
 
+class PauseCommand(Command):
+    """Pause a running VM"""
+    usage = "pause [<VM settings filenames>]"
+
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        mode = "gui"
+        if len(args) == 0:
+            raise Exception("Missing virtual machine name argument");
+        vm = VirtualMachine.find(args.pop(0))
+        vm.openSession()
+        vm.pause()
+        vm.closeSession()
+        return 0
+
+Command.register_command("pause", PauseCommand)
+
 class RegisterCommand(Command):
     """Register a VM"""
     usage = "register [<VM settings filenames>]"
@@ -179,6 +197,24 @@ class RegisterCommand(Command):
         return 0
 
 Command.register_command("register", RegisterCommand)
+
+class ResumeCommand(Command):
+    """Resume a paused VM"""
+    usage = "resume [<VM settings filenames>]"
+
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        mode = "gui"
+        if len(args) == 0:
+            raise Exception("Missing virtual machine name argument");
+        vm = VirtualMachine.find(args.pop(0))
+        vm.openSession()
+        vm.resume()
+        vm.closeSession()
+        return 0
+
+Command.register_command("resume", ResumeCommand)
 
 class StartCommand(Command):
     """Start a VM"""

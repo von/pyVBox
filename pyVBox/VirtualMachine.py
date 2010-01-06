@@ -25,6 +25,29 @@ class VirtualMachine:
     #
     # Top-level controls
     #
+    # TODO: If we don't have a session, use openExistingSession()
+    #       to get one, removing the requirement for the caller
+    #       to do openSession().
+    def pause(self):
+        """Pause a running VM."""
+        self._checkSession()
+        try:
+            console = self._session.console
+            console.pause()
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+
+    def resume(self):
+        """Resume a paused VM."""
+        self._checkSession()
+        try:
+            console = self._session.console
+            console.resume()
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+
     def powerOff(self, wait=False):
         """Power off a running VM.
 
