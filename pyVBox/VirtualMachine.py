@@ -100,6 +100,8 @@ class VirtualMachine:
             VirtualBoxException.handle_exception(e)
             raise
 
+    # TODO: Rename to isRegistered() for consistency.
+    #       Need to change in all callers.
     def registered(self):
         """Is this virtual machine registered?"""
         try:
