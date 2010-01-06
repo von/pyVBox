@@ -86,7 +86,7 @@ class AttachCommand(Command):
             verboseMsg("Attaching %s" % hd)
             vm.attachDevice(hd)
         vm.closeSession()
-        return 1
+        return 0
 
 Command.register_command("attach", AttachCommand)
     
