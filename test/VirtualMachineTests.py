@@ -27,11 +27,11 @@ class VirtualMachineTests(pyVBoxTest):
         """Test VirtualMachine.register() and related functions"""
         machine = VirtualMachine.open(self.testVMpath)
         machine.register()
-        self.assertEqual(True, machine.registered())
+        self.assertEqual(True, machine.isRegistered())
         m2 = VirtualMachine.find(machine.getName())
         self.assertEqual(machine.getId(), m2.getId())
         machine.unregister()
-        self.assertEqual(False, machine.registered())
+        self.assertEqual(False, machine.isRegistered())
 
     def testSession(self):
         """Test VirtualMachine.openSession() and related functions"""
@@ -77,9 +77,9 @@ class VirtualMachineTests(pyVBoxTest):
         harddisk = HardDisk.open(self.testHDpath)
         machine.openSession()
         machine.attachDevice(harddisk)
-        self.assertEqual(True, machine.registered())
+        self.assertEqual(True, machine.isRegistered())
         machine.eject()
-        self.assertEqual(False, machine.registered())
+        self.assertEqual(False, machine.isRegistered())
         harddisk.close()
 
     def testRemoteSession(self):

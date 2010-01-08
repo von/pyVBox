@@ -102,7 +102,7 @@ class BootVMCommand(Command):
             raise Exception("Missing virtual machine argument")
         vm = VirtualMachine.open(args.pop(0))
         atexit.register(vm.eject)
-        if not vm.registered():
+        if not vm.isRegistered():
             vm.register()
         vm.openSession()
         for hd in args:
@@ -189,7 +189,7 @@ class RegisterCommand(Command):
             raise Exception("Missing virtual machine name argument");
         for filename in args:
             vm = VirtualMachine.open(args.pop(0))
-            if vm.registered():
+            if vm.isRegistered():
                 errorMsg("VM \"%s\" is already registered." % vm)
             else:
                 verboseMsg("Registering VM %s" % vm)
@@ -242,7 +242,7 @@ class UnregisterCommand(Command):
             raise Exception("Missing virtual machine name argument");
         for filename in args:
             vm = VirtualMachine.find(args.pop(0))
-            if vm.registered():
+            if vm.isRegistered():
                 verboseMsg("Unregistering VM %s" % vm)
                 vm.unregister()
             else:

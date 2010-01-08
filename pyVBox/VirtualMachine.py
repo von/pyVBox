@@ -64,7 +64,7 @@ class VirtualMachine:
 
     def eject(self):
         """Do what ever it takes to unregister the VM"""
-        if not self.registered():
+        if not self.isRegistered():
             # Nothing to do
             return
         if not self.hasSession():
@@ -123,9 +123,7 @@ class VirtualMachine:
             VirtualBoxException.handle_exception(e)
             raise
 
-    # TODO: Rename to isRegistered() for consistency.
-    #       Need to change in all callers.
-    def registered(self):
+    def isRegistered(self):
         """Is this virtual machine registered?"""
         try:
             self._vbox.getMachine(self.getId())
@@ -173,7 +171,7 @@ class VirtualMachine:
         """Opens a new direct session with the given virtual machine.
 
         Machine must be registered."""
-        if not self.registered():
+        if not self.isRegistered():
             raise VirtualBoxException.VirtualBoxInvalidVMStateException(
                 "VM is not registered")
         if self._session is not None:
@@ -190,7 +188,7 @@ class VirtualMachine:
 
     def openRemoteSession(self, type="gui", env=""):
         """Spawns a new process that executes a virtual machine (called a "remote session")."""
-        if not self.registered():
+        if not self.isRegistered():
             raise VirtualBoxException.VirtualBoxInvalidVMStateException(
                 "VM is not registered")
         try:
