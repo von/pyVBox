@@ -10,6 +10,7 @@ import atexit
 import optparse
 import os.path
 import sys
+import traceback
 
 #----------------------------------------------------------------------
 #
@@ -23,10 +24,13 @@ def errorMsg(msg):
     sys.stderr.write(msg + "\n")
 
 def handle_exception(e, msg=None):
+    sys.stderr.write("Error: ")
     if msg is not None:
         sys.stderr.write(msg + ": ")
     sys.stderr.write(str(e) + "\n")
-    
+    if verbosityLevel > 1:
+        traceback.print_exc()
+
 def message(msg):
     if verbosityLevel > 0:
         sys.stdout.write(msg + "\n")
