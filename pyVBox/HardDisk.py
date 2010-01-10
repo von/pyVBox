@@ -10,6 +10,21 @@ class HardDisk(Medium):
     #
     # Creation metods
     #
+    def clone(self, path, wait=True):
+        """Create a clone of this drive at the given location.
+        
+        Returns Progress instance. If wait is True, does not return until process completes."""
+        try:
+            path = self._canonicalizeMediumPath(path)
+            target = self.createWithStorage(path, self.logicalSize)
+            progress = self.cloneTo(target, wait=wait)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        if wait:
+            progress.waitForCompletion()
+        return progress
+
     @classmethod
     def create(cls, path, format=None):
         """Create a new hard disk at the given location."""
@@ -78,6 +93,24 @@ class HardDisk(Medium):
     #
     # Instantiation of other methods
     #
+    def cloneTo(self, target, variant=None, parent=None, wait=True):
+        """Clone to the target hard drive.
+        
+        Returns Progress instance. If wait is True, does not return until process completes."""
+        if variant is None:
+            variant = Constants.MediumVariant_Standard
+        try:
+            progress = self.getIMedium().cloneTo(target.getIMedium(),
+                                                 variant,
+                                                 parent)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        progress = Progress(progress)
+        if wait:
+            progress.waitForCompletion()
+        return progress
+
     def createBaseStorage(self, size, variant=None, wait=True):
         """Create storage for the drive of the given size (in MB).
 
