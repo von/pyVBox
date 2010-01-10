@@ -50,6 +50,9 @@ VBOX_E_FILE_NOT_FOUND = 0x80004005
 
 XPCOM_E_INVALID_SESSION_TYPE = 0x80070057
 
+# Returned when getting machine attribute from closed session
+VBOX_E_SESSION_CLOSED = 0x8000ffff
+
 ######################################################################
 
 class VirtualBoxException(Exception):
@@ -128,6 +131,7 @@ EXCEPTION_MAPPINGS = {
     VBOX_E_OBJECT_IN_USE         : VirtualBoxObjectInUseException,
     VBOX_E_FILE_NOT_FOUND        : VirtualBoxFileNotFoundException,
     XPCOM_E_INVALID_SESSION_TYPE : VirtualBoxInvalidSessionType,
+    VBOX_E_SESSION_CLOSED        : VirtualBoxInvalidVMStateException,
     }
 
 def handle_exception(ex):
