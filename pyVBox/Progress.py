@@ -15,7 +15,11 @@ class Progress:
 Timeout is in milliseconds. specify None for an indefinite wait."""
         if timeout is None:
             timeout = self.WaitIndefinite
-        self._progress.waitForCompletion(timeout)
+        try:
+            self._progress.waitForCompletion(timeout)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
         if not self._progress.completed:
             # TODO: This is obly an error if we were waiting indefinitely?
             # TODO: This is not the right exception to return.
