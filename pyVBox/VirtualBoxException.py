@@ -45,6 +45,9 @@ VBOX_E_OBJECT_IN_USE = 0x80BB000C
 ######################################################################
 # Constants I've found experimentally. Names are of my own creation.
 
+# Returned from Progress.waitForCompletion()
+VBOX_E_ERROR_ABORT = 0x80004004 
+
 # Returned when VirtualMachine.open() method doesn't find a file
 VBOX_E_FILE_NOT_FOUND = 0x80004005
 
@@ -115,6 +118,10 @@ class VirtualBoxInvalidSessionType(VirtualBoxException):
     """Invalid session type."""
     errno = XPCOM_E_INVALID_SESSION_TYPE
 
+class VirtualBoxOperationAborted(VirtualBoxException):
+    """Operation aborted."""
+    errno = VBOX_E_ERROR_ABORT
+
 # Mappings from VirtualBox error numbers to pyVBox classes
 EXCEPTION_MAPPINGS = {
     VBOX_E_OBJECT_NOT_FOUND      : VirtualBoxObjectNotFoundException,
@@ -129,6 +136,7 @@ EXCEPTION_MAPPINGS = {
     VBOX_E_XML_ERROR             : VirtualBoxInvalidXMLError,
     VBOX_E_INVALID_SESSION_STATE : VirtualBoxInvalidSessionStateException,
     VBOX_E_OBJECT_IN_USE         : VirtualBoxObjectInUseException,
+    VBOX_E_ERROR_ABORT           : VirtualBoxOperationAborted,
     VBOX_E_FILE_NOT_FOUND        : VirtualBoxFileNotFoundException,
     XPCOM_E_INVALID_SESSION_TYPE : VirtualBoxInvalidSessionType,
     VBOX_E_SESSION_CLOSED        : VirtualBoxInvalidVMStateException,
