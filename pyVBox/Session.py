@@ -5,13 +5,19 @@ from VirtualBox import VirtualBox
 import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
 
+import weakref
+
 class Session(object):
     _manager = VirtualBoxManager()
     _vbox = VirtualBox()
 
     def __init__(self, isession, vm):
         self._session = isession
-        self._vm = vm
+        # Use a weak reference here to prevent circular reference with
+        # and and VM that will hold up garbage collection.
+        self._vm = weakref.ref(vm)
+        # Sanity check
+        self._check()
         
     def __del__(self):
         self.close()
@@ -24,6 +30,28 @@ class Session(object):
 
     @classmethod
     def open(cls, vm):
+        """Opens a session with the given firtual machine.
+
+        Will open existing session if it alrady exists."""
+        session = None
+        try:
+            session = Session.openExisting(vm)
+        except VirtualBoxException.VirtualBoxInvalidSessionStateException, ex:
+            # No existing session, fall through and open new session.
+            pass
+        except Exception, ex:
+            VirtualBoxException.handle_exception(ex)
+            raise
+        if not session:
+            try:
+                session = Session.openNew(vm)
+            except Exception, ex:
+                VirtualBoxException.handle_exception(ex)
+                raise
+        return session
+
+    @classmethod
+    def openNew(cls, vm):
         """Opens a new direct session with the given virtual machine."""
         try:
             isession = cls._createSession()
@@ -42,6 +70,7 @@ class Session(object):
         except Exception, ex:
             VirtualBoxException.handle_exception(ex)
             raise
+        # TODO: Check session.state == SessionState_Open as per vboxshell.py
         return Session(isession, vm)
 
     @classmethod
@@ -65,6 +94,8 @@ class Session(object):
         if not self.isClosed():
             try:
                 self._session.close()
+                while not self.isClosed():
+                    self._vbox.waitForEvent()
             except Exception, ex:
                 VirtualBoxException.handle_exception(ex)
                 raise
@@ -94,16 +125,14 @@ class Session(object):
         """Create and return an ISesison object."""
         return cls._manager.mgr.getSessionObject(cls._vbox)
 
+    def _check(self):
+        """Check and make sure session appears to be valid.
+
+        Throws exception if otherwise."""
+        if not self.isOpen():
+            raise VirtualBoxException.VirtualBoxInvalidSessionStateException("Session in invalid state: %s" % self.getState())
+
 class RemoteSession(Session):
     """Class representing a remote session."""
+    pass
 
-    def close(self):
-        """Close remote session and wait until VM state reflects this."""
-        if not self.isClosed():
-            try:
-                super(RemoteSession, self).close()
-                while not self._vm.isRemoteSessionClosed():
-                    self._vbox.waitForEvent()
-            except Exception, ex:
-                VirtualBoxException.handle_exception(ex)
-                raise

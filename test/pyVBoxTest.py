@@ -23,11 +23,7 @@ class pyVBoxTest(unittest.TestCase):
         """Unregister test HD and VM if they are registered."""
         # Do machine first to detach any HDs
         machine = VirtualMachine.open(self.testVMpath)
-        if machine.isRegistered():
-            machine.openSession()
-            machine.detachAllDevices()
-            machine.closeSession()
-            machine.unregister()
+        machine.eject()
         if HardDisk.isRegistered(self.testHDpath):
             harddisk = HardDisk.find(self.testHDpath)
             harddisk.close()

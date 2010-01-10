@@ -33,40 +33,13 @@ class VirtualMachineTests(pyVBoxTest):
         machine.unregister()
         self.assertEqual(False, machine.isRegistered())
 
-    def testSession(self):
-        """Test VirtualMachine.openSession() and related functions"""
-        machine = VirtualMachine.open(self.testVMpath)
-        self.assertEqual(False, machine.hasDirectSession())
-        self.assertRaises(
-            pyVBox.VirtualBoxException.VirtualBoxInvalidVMStateException,
-            machine.openSession)
-        machine.register()
-        machine.openSession()
-        self.assertEqual(True, machine.hasDirectSession())
-        machine.closeSession()
-        self.assertEqual(False, machine.hasDirectSession())
-        machine.unregister()
-
-    def testSessionDoubleOpen(self):
-        """Testing for error on multiple calls to VirtualMachine.openSession()"""
-        machine = VirtualMachine.open(self.testVMpath)
-        machine.register()
-        machine.openSession()
-        self.assertRaises(
-            pyVBox.VirtualBoxException.VirtualBoxInvalidSessionStateException,
-            machine.openSession)
-        machine.closeSession()
-        machine.unregister()
-
     def testAttachDevice(self):
         """Test VirtualMachine.attachDevice() and related functions"""
         machine = VirtualMachine.open(self.testVMpath)
         machine.register()
         harddisk = HardDisk.open(self.testHDpath)
-        machine.openSession()
         machine.attachDevice(harddisk)
         machine.detachDevice(harddisk)
-        machine.closeSession()
         machine.unregister()
         harddisk.close()
 
@@ -75,29 +48,22 @@ class VirtualMachineTests(pyVBoxTest):
         machine = VirtualMachine.open(self.testVMpath)
         machine.register()
         harddisk = HardDisk.open(self.testHDpath)
-        machine.openSession()
         machine.attachDevice(harddisk)
         self.assertEqual(True, machine.isRegistered())
         machine.eject()
         self.assertEqual(False, machine.isRegistered())
         harddisk.close()
 
-    def testRemoteSession(self):
-        """Test opening a remote session."""
+    def testPowerOn(self):
+        """Test powering on a VM."""
         machine = VirtualMachine.open(self.testVMpath)
         machine.register()
         harddisk = HardDisk.open(self.testHDpath)
-        machine.openSession()
         machine.attachDevice(harddisk)
-        machine.closeSession()
-        machine.openRemoteSession(type="vrdp")
+        machine.powerOn(type="vrdp")
         machine.waitUntilRunning()
         sleep(5)
-        machine.powerOff()
-        machine.waitUntilDown()
-        machine.closeSession()
-        machine.openSession()
+        machine.powerOff(wait=True)
         machine.detachDevice(harddisk)
-        machine.closeSession()       
         harddisk.close()
         machine.unregister()

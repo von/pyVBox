@@ -81,7 +81,6 @@ class AttachCommand(Command):
         vm = VirtualMachine.find(args.pop(0))
         if len(args) < 1:
             raise Exception("Missing hard disk filenames")
-        vm.openSession()
         for hd in args:
             if HardDisk.isRegistered(hd):
                 hd = HardDisk.find(hd)
@@ -89,7 +88,6 @@ class AttachCommand(Command):
                 hd = HardDisk.open(hd)
             verboseMsg("Attaching %s" % hd)
             vm.attachDevice(hd)
-        vm.closeSession()
         return 0
 
 Command.register_command("attach", AttachCommand)
@@ -108,20 +106,17 @@ class BootVMCommand(Command):
         atexit.register(vm.eject)
         if not vm.isRegistered():
             vm.register()
-        vm.openSession()
         for hd in args:
             hd = HardDisk.find(hd)
             vm.attachDevice(hd)
-        vm.closeSession()
         verboseMsg("Starting VM in %s mode" % mode)
-        vm.openRemoteSession(type=mode)
+        vm.powerOn(type=mode)
         # Wait until machine is running or we have a race condition
         # where it still might be down when we call waitUntilDown()
         vm.waitUntilRunning()
         verboseMsg("VM started. Waiting until power down...")
         vm.waitUntilDown()
-        verboseMsg("VM powered down. Cleaning up...")
-        vm.closeSession()
+        verboseMsg("VM powered down.")
         # Let atexit clean up
         return 0
 
@@ -175,9 +170,7 @@ class PauseCommand(Command):
         if len(args) == 0:
             raise Exception("Missing virtual machine name argument");
         vm = VirtualMachine.find(args.pop(0))
-        vm.openSession()
         vm.pause()
-        vm.closeSession()
         return 0
 
 Command.register_command("pause", PauseCommand)
@@ -213,9 +206,7 @@ class ResumeCommand(Command):
         if len(args) == 0:
             raise Exception("Missing virtual machine name argument");
         vm = VirtualMachine.find(args.pop(0))
-        vm.openSession()
         vm.resume()
-        vm.closeSession()
         return 0
 
 Command.register_command("resume", ResumeCommand)
@@ -231,7 +222,7 @@ class StartCommand(Command):
         if len(args) == 0:
             raise Exception("Missing virtual machine name argument");
         vm = VirtualMachine.find(args.pop(0))
-        vm.openRemoteSession(type=mode)
+        vm.powerOn(type=mode)
 
 Command.register_command("start", StartCommand)
 

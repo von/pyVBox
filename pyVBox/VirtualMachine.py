@@ -14,7 +14,8 @@ class VirtualMachine:
     def __init__(self, machine, session=None):
         """Return a VirtualMachine wrapper around given IMachine instance"""
         self._machine = machine
-        self._session = session
+        # Our cached open session
+        self._session = None
 
     def __del__(self):
         self.closeSession()
@@ -25,25 +26,20 @@ class VirtualMachine:
     #
     # Top-level controls
     #
-    # TODO: If we don't have a session, use openExistingSession()
-    #       to get one, removing the requirement for the caller
-    #       to do openSession().
     def pause(self):
         """Pause a running VM."""
-        self._checkSession()
+        session = self.getSession()
         try:
-            console = self._session.console
-            console.pause()
+            session.console.pause()
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
 
     def resume(self):
         """Resume a paused VM."""
-        self._checkSession()
+        session = self.getSession()
         try:
-            console = self._session.console
-            console.resume()
+            session.console.resume()
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
@@ -51,29 +47,41 @@ class VirtualMachine:
     def powerOff(self, wait=False):
         """Power off a running VM.
 
-        If wait is True, then wait for power down to complete."""
-        self._checkSession()
+        If wait is True, then wait for power down and session closureto complete."""
+        session = self.getSession()
         try:
-            console = self._session.console
-            console.powerDown()
+            session.console.powerDown()
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
         if wait:
             self.waitUntilDown()
+            self.waitForSessionClose()
+
+    def powerOn(self, type="gui", env=""):
+        """Spawns a new process that executes a virtual machine.
+
+        This is spawning a "remote session" in VirtualBox terms."""
+        # TODO: Add a wait argument
+        if not self.isRegistered():
+            raise VirtualBoxException.VirtualBoxInvalidVMStateException(
+                "VM is not registered")
+        try:
+            # Remote session must replace any existing session
+            self.closeSession()
+            self._session = Session.openRemote(self, type=type, env=env)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
 
     def eject(self):
         """Do what ever it takes to unregister the VM"""
         if not self.isRegistered():
             # Nothing to do
             return
-        if not self.hasSession():
-            self.openSession()
         if self.isRunning():
             self.powerOff(wait=True)
         self.detachAllDevices()
-        self.closeSession()
-        self.waitForRemoteSessionClose()
         self.unregister()
 
     #
@@ -118,6 +126,8 @@ class VirtualMachine:
     def unregister(self):
         """Unregisters the machine previously registered using register()."""
         try:
+            # Must close any open session to unregister
+            self.closeSession()
             self._vbox.unregisterMachine(self.getId())
         except Exception, e:
             VirtualBoxException.handle_exception(e)
@@ -136,113 +146,63 @@ class VirtualMachine:
     # Attribute getters
     #
 
-    def getConsole(self):
-        """Return the console associated with session."""
-        self._checkSession()
-        return self._session.console
-
     def getId(self):
         """Return the UUID of the virtual machine."""
         return self.getIMachine().id
 
     def getIMachine(self):
-        """Return wrapped IMachine instance.
-
-        If we have a mutable IMachine associated with a session, return that."""
-        if self.hasSession():
-            return self._getSessionMachine()
-        else:
-            return self._machine
-
-    def getSession(self):
-        self._checkSession()
-        return self._session
+        """Return wrapped IMachine instance."""
+        return self._machine
 
     def getName(self):
         return self.getIMachine().name
 
-
-
     #
-    # Session methods
+    # Session management
     #
 
-    def openSession(self):
-        """Opens a new direct session with the given virtual machine.
-
-        Machine must be registered."""
-        if not self.isRegistered():
-            raise VirtualBoxException.VirtualBoxInvalidVMStateException(
-                "VM is not registered")
-        if self._session is not None:
-            raise VirtualBoxException.VirtualBoxInvalidSessionStateException(
-                "VM has no open session")
-        try:
-            if self.hasRemoteSession():
-                self._session = Session.openExisting(self)
-            else:
-                self._session = Session.open(self)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
-
-    def openRemoteSession(self, type="gui", env=""):
-        """Spawns a new process that executes a virtual machine (called a "remote session")."""
-        if not self.isRegistered():
-            raise VirtualBoxException.VirtualBoxInvalidVMStateException(
-                "VM is not registered")
-        try:
-            self._session = Session.openRemote(self, type=type, env=env)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
+    def getSession(self):
+        """Return a session to the VM."""
+        if (not self._session) or (self._session.isClosed()):
+            self._session = Session.open(self)
+        return self._session
 
     def closeSession(self):
-        """Close any open session."""
-        if self._session is not None:
-            self._session.close()
-            self._session = None
+        """Close any open session to the VM."""
+        if not self._session:
+            return
+        isDirect = self._session.isDirect()
+        self._session.close()
+        self._session = None
+        if isDirect:
+            # For Direct sessions, wait for Machine to show session in
+            # closed state or we risk race condition with subsequent
+            # command if it requires no session to be open.  For
+            # Remote sessions, session won't close since it will
+            # remain open, so don't wait.
+            self.waitForSessionClose()
 
     def hasSession(self):
         """Does the machine have an open session?"""
-        return ((self._session is not None) and
-                (self._session.isOpen()))
-
-    def hasDirectSession(self):
-        """Does the machine have an open direct session?"""
-        return ((self._session is not None) and
-                (self._session.isDirect()))
-
-    def hasRemoteSession(self):
-        """Does the machine have an running remote session?"""
-        state = self.getRemoteSessionState()
+        state = self.getSessionState()
         return ((state == Constants.SessionState_Open) or
                 (state == Constants.SessionState_Spawning) or
                 (state == Constants.SessionState_Closing))
 
-    def isRemoteSessionClosed(self):
-        """Is the remote session closed?"""
-        state = self.getRemoteSessionState()
-        return (state == Constants.SessionState_Closed)
+    def isSessionClosed(self):
+        """Does the VM not have an open session."""
+        state = self.getSessionState()
+        return ((state == Constants.SessionState_Null) or
+                (state == Constants.SessionState_Closed))
 
-    def waitForRemoteSessionClose(self):
-        """Wait for remote session to close."""
-        while not self.isRemoteSessionClosed():
+    def waitForSessionClose(self):
+        """Wait for session to close."""
+        while not self.isSessionClosed():
             self.waitForEvent()
 
-    def getRemoteSessionState(self):
+    def getSessionState(self):
         """Return the session state of the VM."""
-        # Seems like .sessionState is really remote session state.
-        # Going with that.
-        #
-        # If the VM is transitioning we can get the following error:
-        # Exception: 0x80070005 (The object is not ready)
-        # In this case, punt and return SessionState_Null
-        try:
-            state = self.getIMachine().sessionState
-        except:
-            state = Constants.SessionState_Null
-        return state
+        return self.getIMachine().sessionState
 
     #
     # Attach methods
@@ -250,7 +210,7 @@ class VirtualMachine:
 
     def attachDevice(self, medium):
         """Attachs a device. Requires an open session."""
-        self._checkSession()
+        session = self.getSession()
         try:
             # XXX following code needs to be smarter and find appropriate
             # attachment point
@@ -259,11 +219,11 @@ class VirtualMachine:
             controllerPort = 0
             device = 0
             deviceType = Constants.DeviceType_HardDisk
-            self.getIMachine().attachDevice(storageController.name,
-                                            controllerPort,
-                                            device,
-                                            deviceType,
-                                            medium.getId())
+            session.getIMachine().attachDevice(storageController.name,
+                                               controllerPort,
+                                               device,
+                                               deviceType,
+                                               medium.getId())
             self.saveSettings()
         except Exception, e:
             VirtualBoxException.handle_exception(e)
@@ -271,12 +231,12 @@ class VirtualMachine:
 
     def detachDevice(self, device):
         """Detach the device from the machine."""
-        self._checkSession()
+        session = self.getSession()
         try:
             attachment = self._findMediumAttachment(device)
-            self.getIMachine().detachDevice(attachment.controller,
-                                            attachment.port,
-                                            attachment.device)
+            session.getIMachine().detachDevice(attachment.controller,
+                                               attachment.port,
+                                               attachment.device)
             self.saveSettings()
         except Exception, e:
             VirtualBoxException.handle_exception(e)
@@ -284,13 +244,13 @@ class VirtualMachine:
 
     def detachAllDevices(self):
         """Detach all devices from the machine."""
-        self._checkSession()
+        session = self.getSession()
         try:
             attachments = self._getMediumAttachments()
             for attachment in attachments:
-                self.getIMachine().detachDevice(attachment.controller,
-                                                attachment.port,
-                                                attachment.device)
+                session.getIMachine().detachDevice(attachment.controller,
+                                                   attachment.port,
+                                                   attachment.device)
             self.saveSettings()
         except Exception, e:
             VirtualBoxException.handle_exception(e)
@@ -302,7 +262,9 @@ class VirtualMachine:
 
     def saveSettings(self):
         """Saves any changes to machine settings made since the session has been opened or a new machine has been created, or since the last call to saveSettings or discardSettings."""
-        self.getIMachine().saveSettings()
+        # Use mutable machine associated with session.
+        session = self.getSession()
+        session.getIMachine().saveSettings()
 
     #
     # Monitoring methods
@@ -340,6 +302,7 @@ class VirtualMachine:
             return True
         return False
 
+
     #
     # Internal utility functions
     #
@@ -350,13 +313,6 @@ class VirtualMachine:
         # path must be absolute path
         return os.path.abspath(path)
 
-    def _checkSession(self):
-        """Check that we have a session or throw an exception."""
-        # XXX Also check sessionState?
-        if self._session is None:
-            raise VirtualBoxException.VirtualBoxInvalidVMStateException(
-                "VM has no open session")
-
     def _findMediumAttachment(self, device):
         """Given a device, find the IMediumAttachment object associated with its attachment on this machine."""
         mediumAttachments = self._getMediumAttachments()
@@ -366,6 +322,7 @@ class VirtualMachine:
         raise VirtualBoxException.VirtualBoxPluggableDeviceManagerError(
             "No attachment for device \"%s\" on VM \"%s\" found" % (device,
                                                                     self))
+
 
     #
     # Internal attribute getters
@@ -382,10 +339,6 @@ class VirtualMachine:
     def _getMediumAttachments(self):
         """Return the array of medium attachements on this virtual machine."""
         return self._getArray('mediumAttachments')
-
-    def _getSessionMachine(self):
-        """Return the machine associated with our session."""
-        return self._session.getIMachine()
 
     def _getStorageControllers(self):
         """Return the array of storage controllers associated with this virtual machine."""
