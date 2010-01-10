@@ -69,6 +69,31 @@ class Command:
         """Given a name, return associated registered command class"""
         return cls.registered_commands[name]
 
+    @classmethod
+    def string_to_size(cls, string):
+        """Given a string representing a size return size as long.
+
+        Size is in MB by default. Supported suffixes: MB, GB, TB, PB"""
+        import re
+
+        match = re.match("(\d+)(\w\w)?\Z", string)
+        if not match:
+            raise Exception("Could not parse size \"%s\"" % string)
+        number = long(match.group(1))
+        suffix = match.group(2)
+        if suffix:
+            suffix = suffix.lower()
+            suffixes = {
+                "mb" : 1,
+                "gb" : 1024,
+                "tb" : 1048576,
+                "pb" : 1073741824,
+                }
+            if not suffixes.has_key(suffix):
+                raise Exception("Unrecognized suffix \"%s\"" % suffix)
+            number *= suffixes[suffix]
+        return number
+
 class AttachCommand(Command):
     """Attach hard disks to a virtual machine"""
     usage = "attach <VM name> <HD files>"
@@ -121,6 +146,25 @@ class BootVMCommand(Command):
         return 0
 
 Command.register_command("boot", BootVMCommand)
+
+class CreateHDCommand(Command):
+    """Create a hard disk"""
+    usage = "createhd <size> <path>"
+
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        if len(args) < 1:
+            raise Exception("Missing size argument")
+        size = cls.string_to_size(args.pop(0))
+        if len(args) < 1:
+            raise Exception("Missing path argument")
+        path = args.pop(0)
+        verboseMsg("Creating Hard Disk at %s with size %d" % (path, size))
+        HardDisk.createWithStorage(path, size)
+        return 0
+
+Command.register_command("createhd", CreateHDCommand)
 
 class EjectCommand(Command):
     """Eject a virtual machine"""
