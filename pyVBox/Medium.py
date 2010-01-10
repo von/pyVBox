@@ -11,6 +11,12 @@ class Medium:
         """Return a Medium wrapper around given IMachine instance"""
         self._medium = imedium
 
+    # Pass any requests for unrecognized attributes or methods onto
+    # IMedium object. Doing this this way since I don't kow how
+    # to inherit the XPCOM object directly.
+    def __getattr__(self, attr):
+        return eval("self._medium." + attr)
+
     def getId(self):
         """Return UUID of the virtual machine."""
         return self._medium.id
