@@ -116,7 +116,7 @@ class VirtualBoxInvalidSessionType(VirtualBoxException):
 EXCEPTION_MAPPINGS = {
     VBOX_E_OBJECT_NOT_FOUND      : VirtualBoxObjectNotFoundException,
     VBOX_E_INVALID_VM_STATE      : VirtualBoxInvalidVMStateException,
-    VBOX_E_VM_ERROR              : VirtualBoxInvalidVMStateException,
+    VBOX_E_VM_ERROR              : VirtualBoxVMError,
     VBOX_E_FILE_ERROR            : VirtualBoxFileError,
     VBOX_E_IPRT_ERROR            : VirtualBoxRuntimeSubsystemError,
     VBOX_E_PDM_ERROR             : VirtualBoxPluggableDeviceManagerError,
