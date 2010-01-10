@@ -60,6 +60,18 @@ class Command:
     registered_commands = {}
 
     @classmethod
+    def harddisk(cls, string):
+        """Load a harddisk described by string.
+
+        Will open disk if needed."""
+        # TODO: Should also support string being UUID
+        if HardDisk.isRegistered(string):
+            hd = HardDisk.find(string)
+        else:
+            hd = HardDisk.open(string)
+        return hd
+
+    @classmethod
     def register_command(cls, name, command):
         """Register the binding between name and command class"""
         cls.registered_commands[name] = command
@@ -107,10 +119,7 @@ class AttachCommand(Command):
         if len(args) < 1:
             raise Exception("Missing hard disk filenames")
         for hd in args:
-            if HardDisk.isRegistered(hd):
-                hd = HardDisk.find(hd)
-            else:
-                hd = HardDisk.open(hd)
+            hd = cls.harddisk(hd)
             verboseMsg("Attaching %s" % hd)
             vm.attachDevice(hd)
         return 0
@@ -146,6 +155,24 @@ class BootVMCommand(Command):
         return 0
 
 Command.register_command("boot", BootVMCommand)
+
+class CloneCommand(Command):
+    """Clone a hard disk"""
+    usage = "clone <source path> <target path>"
+    
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        if len(args) < 1:
+            raise Exception("Missing source path argument")
+        srcHD = cls.harddisk(args.pop(0))
+        if len(args) < 1:
+            raise Exception("Missing target path argument")
+        targetPath = args.pop(0)
+        srcHD.clone(targetPath)
+        return 0
+
+Command.register_command("clone", CloneCommand)
 
 class CreateHDCommand(Command):
     """Create a hard disk"""
