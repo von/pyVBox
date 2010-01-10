@@ -49,7 +49,7 @@ class HardDisk(Medium):
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
-        return Medium(medium)
+        return HardDisk(medium)
 
     @classmethod
     def find(cls, path):
@@ -60,7 +60,7 @@ class HardDisk(Medium):
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
-        return Medium(medium)
+        return HardDisk(medium)
 
     #
     # Utility methods
