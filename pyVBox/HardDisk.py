@@ -1,6 +1,7 @@
 """Presentation of Medium representing HardDisk"""
 
 from Medium import Medium
+from Progress import Progress
 import VirtualBoxException
 from VirtualBoxManager import Constants
 
@@ -9,6 +10,27 @@ class HardDisk(Medium):
     #
     # Creation metods
     #
+    @classmethod
+    def create(cls, path, format=None):
+        """Create a new hard disk at the given location."""
+        try:
+            path = cls._canonicalizeMediumPath(path)
+            imedium = cls._getVBox().createHardDisk(format, path)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        return HardDisk(imedium)
+
+    @classmethod
+    def createWithStorage(cls, path, size,
+                          format=None, variant=None, wait=True):
+        """Create a new hard disk at given location with given size (in MB).
+
+        This is a wrapper around the create() and createBaseStorage() methods."""
+        disk = HardDisk.create(path, format)
+        disk.createBaseStorage(size, variant, wait)
+        return disk
+
     @classmethod
     def open(cls, path, accessMode = None,
              setImageId=False, imageId="",
@@ -52,3 +74,22 @@ class HardDisk(Medium):
             # XXX Should verify exception is what is expected
             return False
         return True
+
+    #
+    # Instantiation of other methods
+    #
+    def createBaseStorage(self, size, variant=None, wait=True):
+        """Create storage for the drive of the given size (in MB).
+
+        Returns Progress instance. If wait is True, does not return until process completes."""
+        if variant is None:
+            variant = Constants.MediumVariant_Standard
+        try:
+            progress = self.getIMedium().createBaseStorage(size, variant)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        progress = Progress(progress)
+        if wait:
+            progress.waitForCompletion()
+        return progress
