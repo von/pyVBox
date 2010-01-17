@@ -15,6 +15,7 @@ class MediumTests(pyVBoxTest):
         harddisk = HardDisk.open(self.testHDpath)
         self.assertEqual(os.path.abspath(self.testHDpath), harddisk.location)
         self.assertEqual(os.path.basename(self.testHDpath), harddisk.basename())
+        self.assertEqual(os.path.basename(self.testHDpath), str(harddisk))
         harddisk.getId()
         harddisk.getIMedium()
         harddisk.getName()
