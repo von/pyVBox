@@ -34,8 +34,12 @@ class Medium:
         """Closes this medium."""
         self._medium.close()
 
+    def basename(self):
+        """Return the basename of the location of the storage unit holding medium data."""
+        return os.path.basename(self.location)
+
     def __str__(self):
-        return self._medium.location
+        return self.name
 
     @classmethod
     def _canonicalizeMediumPath(cls, path):

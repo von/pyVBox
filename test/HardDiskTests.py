@@ -5,12 +5,16 @@ from pyVBoxTest import pyVBoxTest, main
 from pyVBox.HardDisk import HardDisk
 import pyVBox.VirtualBoxException
 
+import os.path
+
 class HardDiskTests(pyVBoxTest):
     """Test case for HardDisk"""
 
     def testOpen(self):
         """Test HardDisk.open()"""
         harddisk = HardDisk.open(self.testHDpath)
+        self.assertEqual(os.path.abspath(self.testHDpath), harddisk.location)
+        self.assertEqual(os.path.basename(self.testHDpath), harddisk.basename())
         harddisk.close()
 
     def testOpenNotFound(self):
