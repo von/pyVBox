@@ -1,5 +1,7 @@
 """Wrapper around IMachine object"""
 
+from Glue import IMediumToMedium
+from Medium import Medium
 from Session import Session
 from VirtualBox import VirtualBox
 import VirtualBoxException
@@ -255,6 +257,19 @@ class VirtualMachine:
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
+
+    def getAttachedDevices(self):
+        """Return array of attached Medium instances."""
+        session = self.getSession()
+        mediums = []
+        try:
+            attachments = self._getMediumAttachments()
+            attachments = filter(lambda a: a.medium is not None, attachments)
+            mediums = [IMediumToMedium(a.medium) for a in attachments]
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        return mediums
 
     #
     # Settings functions

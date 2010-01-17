@@ -39,6 +39,8 @@ class VirtualMachineTests(pyVBoxTest):
         machine.register()
         harddisk = HardDisk.open(self.testHDpath)
         machine.attachDevice(harddisk)
+        mediums = machine.getAttachedDevices()
+        self.assertEqual(str(harddisk), str(mediums[0]))
         machine.detachDevice(harddisk)
         machine.unregister()
         harddisk.close()
