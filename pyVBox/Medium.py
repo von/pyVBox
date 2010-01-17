@@ -87,6 +87,11 @@ class Medium:
     def __str__(self):
         return self.name
 
+    # IMachine apparently defines this and its method will sometimes
+    # be called in preference to our __str__() method.
+    def __unicode__(self):
+        return self.name
+
     #
     # Instantiation of other methods
     #
