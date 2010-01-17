@@ -8,7 +8,8 @@ class Medium:
     _manager = VirtualBoxManager()
 
     def __init__(self, imedium):
-        """Return a Medium wrapper around given IMachine instance"""
+        """Return a Medium wrapper around given IMedium instance"""
+        assert(imedium is not None)
         self._medium = imedium
 
     # Pass any requests for unrecognized attributes or methods onto
