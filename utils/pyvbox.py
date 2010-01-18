@@ -146,7 +146,44 @@ class AttachCommand(Command):
         return 0
 
 Command.register_command("attach", AttachCommand)
-    
+
+class BackupCommand(Command):
+    """Back up a virtual machine to the given directory."""
+    usage = "backup <VM name> <target directory>"
+
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        if len(args) < 1:
+            raise Exception("Missing virtual machine argument")
+        vm = VirtualMachine.find(args.pop(0))
+        if len(args) < 1:
+            raise Exception("Missing target directory argument")
+        targetDir = args.pop(0)
+        verboseMsg("Backing up %s to %s" % (vm, targetDir))
+        if vm.isRunning():
+            verboseMsg("Pausing VM...")
+            # Must wait until paused or will have race condition for lock
+            # on disks.
+            vm.pause(wait=True)
+            atexit.register(vm.resume)
+        # Todo: Backup settings file in some way.
+        # Todo: Want to back up devices than hard drives?
+        disks = vm.getHardDrives()
+        for disk in disks:
+            targetFilename = os.path.join(targetDir, disk.basename())
+            # Todo: Need to resolve file already existing here.
+            verboseMsg("Backing up disk %s to %s (%d bytes)" % (disk,
+                                                                targetFilename,
+                                                                disk.size))
+            progress = disk.clone(targetFilename, wait=False)
+            show_progress(progress)
+            # Remove newly created clone from registry
+            clone = HardDisk.find(targetFilename)
+            clone.close()
+                   
+Command.register_command("backup", BackupCommand)
+
 class BootVMCommand(Command):
     """Boot a virtual machine and eject it after power down"""
     usage = "boot <VM settings file> [<HD files>]"
