@@ -84,6 +84,36 @@ class Medium:
         """Return the basename of the location of the storage unit holding medium data."""
         return os.path.basename(self.location)
 
+    #
+    # Methods for testing deviceType
+    #
+    def isFloppy(self):
+        """Is this a Floppy?"""
+        return (self._medium.deviceType == Constants.DeviceType_Floppy)
+
+    def isCDorDVD(self):
+        """Is this a CD or DVD image?"""
+        return (self._medium.deviceType == Constants.DeviceType_DVD)
+
+    def isHardDisk(self):
+        """Is this a HardDisk?"""
+        return (self._medium.deviceType == Constants.DeviceType_HardDisk)
+
+    def isNetworkDevice(self):
+        """Is this a Network device?"""
+        return (self._medium.deviceType == Constants.DeviceType_Network)
+    
+    def isUSB(self):
+        """Is this a USB device?"""
+        return (self._medium.deviceType == Constants.DeviceType_USB)
+    
+    def isSharedFolder(self):
+        """Is this a shared folder?"""
+        return (self._medium.deviceType == Constants.DeviceType_ShardFolder)
+
+    #
+    # Internal string representations 
+    #
     def __str__(self):
         return self.name
 
