@@ -43,6 +43,14 @@ class Medium:
         """Create a new hard disk at the given location."""
         try:
             path = cls._canonicalizeMediumPath(path)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        if os.path.exists(path):
+            # Todo: Better exception here
+            raise VirtualBoxException.VirtualBoxException(
+                "Cannot create %s - file already exists." % path)
+        try:
             # Despire the name of this method it returns an IMedium
             # instance
             imedium = cls._getVBox().createHardDisk(format, path)
