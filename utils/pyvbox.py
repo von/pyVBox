@@ -41,6 +41,27 @@ def verboseMsg(msg):
         sys.stdout.write(msg + "\n")
         sys.stdout.flush()
 
+
+def show_progress(progress, prefix="Progess: "):
+    """Given a Progress instance, display progress to user as percent.
+    
+    The string prefix will precent the percentage.
+    If running in quiet mode, displays nothing."""
+    if verbosityLevel > 0:
+        try:
+            while not progress.completed:
+                print "%s%2d%%\r" % (prefix, progress.percent),
+                sys.stdout.flush()
+                # Wait one second
+                progress.waitForCompletion(timeout=1000)
+        except KeyboardInterrupt:
+            print "Interrupted."
+        else:
+            # Print one last time with carriage return
+            print "%s%2d%%" % (prefix, progress.percent),
+    else:
+        progress.waitForCompletion()
+
 #----------------------------------------------------------------------
 #
 # Commands
