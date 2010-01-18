@@ -26,11 +26,11 @@ Timeout is in milliseconds. specify None for an indefinite wait."""
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
-        if not self._progress.completed:
-            # TODO: This is obly an error if we were waiting indefinitely?
+        if (not self._progress.completed) and (timeout == self.WaitIndefinite):
             # TODO: This is not the right exception to return.
             raise VirtualBoxException.VirtualBoxException(
-                "Error starting VM: %s (%d)" % 
-                (self._progress.errorInfo.text,
+                "Task %s did not complete: %s (%d)" % 
+                (self._progress.description,
+                 self._progress.errorInfo.text,
                  self._progress.resultCode))
 
