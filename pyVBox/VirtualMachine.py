@@ -271,6 +271,10 @@ class VirtualMachine:
             raise
         return mediums
 
+    def getHardDrives(self):
+        """Return array of attached HardDrive instances."""
+        return filter(lambda d: d.isHardDisk(), self.getAttachedDevices())
+
     #
     # Settings functions
     #
