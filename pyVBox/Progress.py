@@ -9,6 +9,12 @@ class Progress:
         """Return a Progress wrapper around given IProgress instance"""
         self._progress = progress
 
+    # Pass any requests for unrecognized attributes or methods onto
+    # IProgress object. Doing this this way since I don't kow how
+    # to inherit the XPCOM object directly.
+    def __getattr__(self, attr):
+        return eval("self._progress." + attr)
+
     def waitForCompletion(self, timeout = None):
         """Waits until the task is done (including all sub-operations).
 
