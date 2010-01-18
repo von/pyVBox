@@ -28,14 +28,18 @@ class VirtualMachine:
     #
     # Top-level controls
     #
-    def pause(self):
-        """Pause a running VM."""
+    def pause(self, wait=False):
+        """Pause a running VM.
+
+        If wait is True, then wait until machine is actually paused before returning."""
         session = self.getSession()
         try:
             session.console.pause()
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
+        if wait:
+            self.waitUntilPaused()
 
     def resume(self):
         """Resume a paused VM."""
@@ -321,6 +325,17 @@ class VirtualMachine:
             return True
         return False
 
+    def isPaused(self):
+        """Is machine Paused?"""
+        state = self.getState()
+        if (state == Constants.MachineState_Paused):
+            return True
+        return Fals
+
+    def waitUntilPaused(self):
+        """Wait until machine is paused."""
+        while not self.isPaused():
+            self.waitForEvent()
 
     #
     # Internal utility functions
