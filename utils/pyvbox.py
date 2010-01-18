@@ -337,13 +337,19 @@ def main(argv=None):
     (options, args) = parser.parse_args()
     if len(args) < 1:
         parser.error("missing command")
+    commandStr = args.pop(0)
 
     if options.verbosityLevel != None:
         verbosityLevel = options.verbosityLevel
         verboseMsg("Setting verbosity level to %d" % verbosityLevel)
 
     try:
-        command = Command.lookup_command_by_name(args.pop(0))
+        command = Command.lookup_command_by_name(commandStr)
+    except Exception, e:
+        parser.error("Unrecognized command \"%s\"" % commandStr)
+        return 1
+
+    try:
         status = command.invoke(args)
     except Exception, e:
         handle_exception(e)
