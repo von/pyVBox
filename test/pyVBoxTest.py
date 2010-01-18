@@ -8,9 +8,9 @@ from pyVBox.VirtualMachine import VirtualMachine
 
 class pyVBoxTest(unittest.TestCase):
     """Base class for all pyVBox unittests."""
-    testHDpath = "appliances/TestHD.vdi"
+    testHDpath = "test/appliances/TestHD.vdi"
     bogusHDpath = "/bogus/path"
-    testVMpath = "appliances/TestVM.xml"
+    testVMpath = "test/appliances/TestVM.xml"
     bogusVMpath = "/bogus/path"
 
     def setUp(self):

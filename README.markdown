@@ -44,6 +44,8 @@ and the vboxshell.py example that comes with the Virtualbox SDK.
 
 # Setting up your environment
 
+(TODO: Update this to use setup.py)
+
 You will need to include two paths in your PYTHONPATH environent variable:
 
 1. The directory containing the pyVBox module directory. I.e. the
