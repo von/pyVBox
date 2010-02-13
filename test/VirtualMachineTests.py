@@ -88,3 +88,12 @@ class VirtualMachineTests(pyVBoxTest):
         """Test getAll() method"""
         machines = VirtualMachine.getAll()
 
+    def testGetOSType(self):
+        """Test getOSType() method"""
+        machine = VirtualMachine.open(self.testVMpath)
+        osType = machine.getOSType()
+        self.assertNotEqual(None, osType)
+        self.assertNotEqual(None, osType.familyId)
+        self.assertNotEqual(None, osType.familyDescription)
+        self.assertNotEqual(None, osType.id)
+        self.assertNotEqual(None, osType.description)        

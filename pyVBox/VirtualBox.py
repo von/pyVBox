@@ -2,6 +2,7 @@
 
 This is not used at this time."""
 
+from GuestOSType import GuestOSType
 from VirtualBoxException import VirtualBoxException
 from VirtualBoxManager import VirtualBoxManager
 
@@ -17,6 +18,11 @@ class VirtualBox:
     # to inherit the XPCOM object directly.
     def __getattr__(self, attr):
         return eval("self._vbox." + attr)
+
+    def getGuestOSType(self, osTypeId):
+        """Returns an object describing the specified guest OS type."""
+        iosType = self._vbox.getGuestOSType(osTypeId)
+        return GuestOSType(iosType)
 
     def getIMachines(self):
         """Return array of machine objects registered within this VirtualBox instance."""

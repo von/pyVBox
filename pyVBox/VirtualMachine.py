@@ -218,6 +218,16 @@ class VirtualMachine:
     def getName(self):
         return self.getIMachine().name
 
+    def getOSType(self):
+        """Returns an object describing the specified guest OS type."""
+        try:
+            imachine = self.getIMachine()
+            osType = self._vbox.getGuestOSType(imachine.OSTypeId)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        return osType
+
     #
     # Session management
     #
