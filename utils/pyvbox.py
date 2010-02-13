@@ -62,6 +62,28 @@ def show_progress(progress, prefix="Progess: "):
     else:
         progress.waitForCompletion()
 
+def print_vm(vm):
+    """Given a VM instance, display all the information about it."""
+    print "VM: %s" % vm.name
+    print "  Id: %s" % vm.id
+    osType = vm.getOSType()
+    print "  OS: %s" % osType.description
+    print "  CPU count: %d" % vm.CPUCount
+    print "  RAM: %d MB" % vm.memorySize
+    print "  VRAM: %d MB" % vm.VRAMSize
+    print "  Monitors: %d" % vm.monitorCount
+    devices = vm.getAttachedDevices()
+    for device in devices:
+        print "    Device: %s" % device.name
+        print "      Type: %s" % device.getTypeAsString()
+        print "      Id: %s" % device.id
+        print "      Location: %s" % device.location
+        print "      Format: %s" % device.format
+        print "      Size: %s" % device.size
+    snapshot = vm.getCurrentSnapshot()
+    if snapshot:
+        print "  Current Snapshot: %s" % snapshot.name
+
 #----------------------------------------------------------------------
 #
 # Commands
@@ -392,6 +414,24 @@ class UnregisterCommand(Command):
         return 0
 
 Command.register_command("unregister", UnregisterCommand)
+
+class VMCommand(Command):
+    """Display information about one or more VMs"""
+    usage = "vm [<vm names>]"
+
+    @classmethod
+    def invoke(cls, args):
+        if len(args) == 0:
+            vms = VirtualMachine.getAll()
+            verboseMsg("Registered VMs:")
+            for vm in vms:
+                print "\t%s" % vm.getName()
+        else:
+            for vmName in args:
+                vm = VirtualMachine.find(vmName)
+                print_vm(vm)
+
+Command.register_command("vm", VMCommand)
 
 #----------------------------------------------------------------------
 
