@@ -295,7 +295,6 @@ class PauseCommand(Command):
     @classmethod
     def invoke(cls, args):
         """Invoke the command. Return exit code for program."""
-        mode = "gui"
         if len(args) == 0:
             raise Exception("Missing virtual machine name argument");
         vm = VirtualMachine.find(args.pop(0))
@@ -331,7 +330,6 @@ class ResumeCommand(Command):
     @classmethod
     def invoke(cls, args):
         """Invoke the command. Return exit code for program."""
-        mode = "gui"
         if len(args) == 0:
             raise Exception("Missing virtual machine name argument");
         vm = VirtualMachine.find(args.pop(0))
