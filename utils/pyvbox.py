@@ -338,6 +338,26 @@ class ResumeCommand(Command):
 
 Command.register_command("resume", ResumeCommand)
 
+class SnapshotCommand(Command):
+    """Snapshot a VM"""
+    usage = "snapshot <VM name> <snapshot name> [<snapshot description>]"
+
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        if len(args) == 0:
+            raise Exception("Missing VM name")
+        vm = VirtualMachine.find(args.pop(0))
+        if len(args) == 0:
+            raise Exception("Missing snapshot name")
+        name = args.pop(0)
+        description = None
+        if len(args) > 0:
+            description = args.pop(0)
+        vm.takeSnapshot(name, description)
+
+Command.register_command("snapshot", SnapshotCommand)
+
 class StartCommand(Command):
     """Start a VM"""
     usage = "start <VM name>"

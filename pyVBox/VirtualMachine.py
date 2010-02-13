@@ -2,7 +2,9 @@
 
 from Glue import IMediumToMedium
 from Medium import Medium
+from Progress import Progress
 from Session import Session
+from Snapshot import Snapshot
 from VirtualBox import VirtualBox
 import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
@@ -147,6 +149,48 @@ class VirtualMachine:
             # XXX Should verify exception represents specific error
             return False
         return True
+
+    #
+    # Snapshot methods
+    #
+    def getCurrentSnapshot(self):
+        """Returns current snapshot of this machine or None if machine currently has no snapshots"""
+        imachine = self.getIMachine()
+        if imachine.currentSnapshot is None:
+            return None
+        return Snapshot(imachine.currentSnapshot)
+
+    def takeSnapshot(self, name, description=None, wait=True):
+        """Saves the current execution state and all settings of the machine and creates differencing images for all normal (non-independent) media.
+
+        Returns Progress instance. If wait is True, does not return until process completes."""
+        assert(name is not None)
+        session = self.getSession()
+        try:
+            iprogress = session.console.takeSnapshot(name, description)
+            progress = Progress(iprogress)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        if wait:
+            progress.waitForCompletion()
+        return progress
+
+    def deleteSnapshot(self, snapshot, wait=True):
+        """Deletes the specified snapshot.
+
+        Returns Progress instance. If wait is True, does not return until process completes."""
+        assert(snapshot is not None)
+        session = self.getSession()
+        try:
+            iprogress = session.console.deleteSnapshot(snapshot.id)
+            progress = Progress(iprogress)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        if wait:
+            progress.waitForCompletion()
+        return progress
 
     #
     # Attribute getters

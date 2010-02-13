@@ -70,3 +70,18 @@ class VirtualMachineTests(pyVBoxTest):
         machine.detachDevice(harddisk)
         harddisk.close()
         machine.unregister()
+
+    def testSnapshot(self):
+        """Test taking snapshot of a VM."""
+        snapshotName = "Test Snapshot"
+        machine = VirtualMachine.open(self.testVMpath)
+        machine.register()
+        self.assertEqual(None, machine.getCurrentSnapshot())
+        machine.takeSnapshot(snapshotName)
+        snapshot = machine.getCurrentSnapshot()
+        self.assertNotEqual(snapshot, None)
+        self.assertEqual(snapshotName, snapshot.name)
+        machine.deleteSnapshot(snapshot)
+        self.assertEqual(None, machine.getCurrentSnapshot())
+        
+        
