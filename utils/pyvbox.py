@@ -193,7 +193,7 @@ class BootVMCommand(Command):
         """Invoke the command. Return exit code for program."""
         mode = "gui" # or "vrdp"
         if len(args) < 1:
-            raise Exception("Missing virtual machine argument")
+            raise Exception("Missing virtual machine filename argument")
         vm = VirtualMachine.open(args.pop(0))
         atexit.register(vm.eject)
         if not vm.isRegistered():
@@ -234,7 +234,7 @@ Command.register_command("clone", CloneCommand)
 
 class CreateHDCommand(Command):
     """Create a hard disk"""
-    usage = "createhd <size> <path>"
+    usage = "createhd <size in MB or given suffix> <path>"
 
     @classmethod
     def invoke(cls, args):
@@ -290,7 +290,7 @@ Command.register_command("help", HelpCommand)
 
 class PauseCommand(Command):
     """Pause a running VM"""
-    usage = "pause [<VM settings filenames>]"
+    usage = "pause <VM name>"
 
     @classmethod
     def invoke(cls, args):
@@ -305,13 +305,13 @@ Command.register_command("pause", PauseCommand)
 
 class RegisterCommand(Command):
     """Register a VM"""
-    usage = "register [<VM settings filenames>]"
+    usage = "register <VM settings filename> [<VM settings filename>...]"
 
     @classmethod
     def invoke(cls, args):
         """Invoke the command. Return exit code for program."""
         if len(args) == 0:
-            raise Exception("Missing virtual machine name argument");
+            raise Exception("Missing virtual machine filename argument");
         for filename in args:
             vm = VirtualMachine.open(args.pop(0))
             if vm.isRegistered():
@@ -325,7 +325,7 @@ Command.register_command("register", RegisterCommand)
 
 class ResumeCommand(Command):
     """Resume a paused VM"""
-    usage = "resume [<VM settings filenames>]"
+    usage = "resume <VM name>"
 
     @classmethod
     def invoke(cls, args):
@@ -355,7 +355,7 @@ Command.register_command("start", StartCommand)
 
 class UnregisterCommand(Command):
     """Unregister a VM"""
-    usage = "unregister [<VM settings filenames>]"
+    usage = "unregister <VM name> [<VM name>...]"
 
     @classmethod
     def invoke(cls, args):
