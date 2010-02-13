@@ -84,4 +84,7 @@ class VirtualMachineTests(pyVBoxTest):
         machine.deleteSnapshot(snapshot)
         self.assertEqual(None, machine.getCurrentSnapshot())
         
-        
+    def testGetAll(self):
+        """Test getAll() method"""
+        machines = VirtualMachine.getAll()
+
