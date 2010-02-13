@@ -18,8 +18,17 @@ class VirtualBox:
     def __getattr__(self, attr):
         return eval("self._vbox." + attr)
 
+    def getIMachines(self):
+        """Return array of machine objects registered within this VirtualBox instance."""
+        return self._getArray('machines')
+
     def waitForEvent(self):
         self._manager.waitForEvents()
+
+    def _getArray(self, arrayName):
+        """Return the array identified by the given name"""
+        return self._manager.getArray(self._vbox, arrayName)
+
 
 class VirtualBoxMonitor:
     def __init__(self, vbox):
