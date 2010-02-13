@@ -21,3 +21,9 @@ class MediumTests(pyVBoxTest):
         harddisk.getName()
         self.assertEqual(True, harddisk.isHardDisk())
         harddisk.close()
+
+    def testGetType(self):
+        """Test Medium.getType()"""
+        harddisk = HardDisk.open(self.testHDpath)
+        self.assertNotEqual(None, harddisk.getType())
+        self.assertEqual("hard drive", harddisk.getTypeAsString())

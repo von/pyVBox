@@ -9,6 +9,15 @@ import os.path
 class Medium:
     _manager = VirtualBoxManager()
 
+    DEVICE_MAPPINGS = {
+        Constants.DeviceType_Floppy       : "floppy drive",
+        Constants.DeviceType_DVD          : "DVD",
+        Constants.DeviceType_HardDisk     : "hard drive",
+        Constants.DeviceType_Network      : "network device",
+        Constants.DeviceType_USB          : "USB device",
+        Constants.DeviceType_SharedFolder  : "shared folder",
+        }
+
     def __init__(self, imedium):
         """Return a Medium wrapper around given IMedium instance"""
         assert(imedium is not None)
@@ -91,6 +100,17 @@ class Medium:
     def basename(self):
         """Return the basename of the location of the storage unit holding medium data."""
         return os.path.basename(self.location)
+
+    def getType(self):
+        """Return a identifier of type of device"""
+        return self._medium.deviceType
+
+    def getTypeAsString(self):
+        """Return a human-readable string describing the type of device"""
+        type = self.getType()
+        if not self.DEVICE_MAPPINGS.has_key(type):
+            return "unknown device type"
+        return self.DEVICE_MAPPINGS[type]
 
     #
     # Methods for testing deviceType
