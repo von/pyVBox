@@ -27,6 +27,12 @@ class VirtualMachine:
     def __str__(self):
         return self.getIMachine().name
 
+    # Pass any requests for unrecognized attributes or methods onto
+    # IMachibe object. Doing this this way since I don't kow how
+    # to inherit the XPCOM object directly.
+    def __getattr__(self, attr):
+        return eval("self._machine." + attr)
+
     #
     # Top-level controls
     #
