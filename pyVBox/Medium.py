@@ -117,7 +117,7 @@ class Medium:
     
     def isSharedFolder(self):
         """Is this a shared folder?"""
-        return (self._medium.deviceType == Constants.DeviceType_ShardFolder)
+        return (self._medium.deviceType == Constants.DeviceType_SharedFolder)
 
     #
     # Internal string representations 
