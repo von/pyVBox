@@ -237,7 +237,7 @@ class BootVMCommand(Command):
 Command.register_command("boot", BootVMCommand)
 
 class CloneCommand(Command):
-    """Clone a hard disk"""
+    """Clone a hard disk. Cloned disk will be registered."""
     usage = "clone <source path> <target path>"
     
     @classmethod
@@ -249,7 +249,9 @@ class CloneCommand(Command):
         if len(args) < 1:
             raise Exception("Missing target path argument")
         targetPath = args.pop(0)
-        srcHD.clone(targetPath)
+        verboseMsg("Cloning %s to %s" % (srcHD, targetPath))
+        progress = srcHD.clone(targetPath, wait=False)
+        show_progress(progress)
         return 0
 
 Command.register_command("clone", CloneCommand)
