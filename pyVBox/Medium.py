@@ -32,13 +32,20 @@ class Medium:
     #
     # Creation methods
     #
-    def clone(self, path, wait=True):
+    def clone(self, path, newUUID=True, wait=True):
         """Create a clone of this medium at the given location.
-        
-        Returns Progress instance. If wait is True, does not return until process completes."""
+
+        If wait is True, does not return until process completes.
+        if newUUID is true, clone will have new UUID and will be registered, otherwise will have same UUID as source medium.
+        Returns Progress instance."""
         try:
             path = self._canonicalizeMediumPath(path)
-            target = self.createWithStorage(path, self.logicalSize)
+            if newUUID:
+                # If target doesn't have storage, new UUID is created.
+                target=  self.create(path)
+            else:
+                # If target does have storage, UUID is copied.
+                target = self.createWithStorage(path, self.logicalSize)
             progress = self.cloneTo(target, wait=wait)
         except Exception, e:
             VirtualBoxException.handle_exception(e)
