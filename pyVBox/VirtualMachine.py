@@ -9,6 +9,7 @@ from VirtualBox import VirtualBox
 import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
 
+import os
 import os.path
 
 class VirtualMachine:
@@ -98,6 +99,11 @@ class VirtualMachine:
         self.detachAllDevices()
         self.unregister()
 
+    def delete(self):
+        """Do whatever it takes to delete the VM"""
+        self.eject()
+        os.remove(self.settingsFilePath)
+
     #
     # Creation methods
     #
@@ -124,6 +130,31 @@ class VirtualMachine:
             VirtualBoxException.handle_exception(e)
             raise
         return VirtualMachine(machine)
+
+    @classmethod
+    def create(cls, name, osTypeId, baseFolder=None, id=None, register=True):
+        """Create a new virtual machine with the given name and osType.
+    
+        If baseFolder is not None, it should be a path to use instead
+        of the default machine settings folder for storing the VM.
+
+        If id is not None, it will be used as the UUID of the
+        machine. Otherwise one will be automatically generated.
+
+        If register is True, register machine after creation."""
+        try:
+            machine = cls._vbox.createMachine(name,
+                                              osTypeId,
+                                              baseFolder,
+                                              id)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        vm = VirtualMachine(machine)
+        vm.saveSettings()
+        if register:
+            vm.register()
+        return vm
 
     @classmethod
     def getAll(cls):

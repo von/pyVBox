@@ -97,3 +97,10 @@ class VirtualMachineTests(pyVBoxTest):
         self.assertNotEqual(None, osType.familyDescription)
         self.assertNotEqual(None, osType.id)
         self.assertNotEqual(None, osType.description)        
+
+    def testCreate(self):
+        """Test VirtualMachine.create() method"""
+        machine = VirtualMachine.create("CreateTestVM", "Ubuntu")
+        # Clean up
+        machine.delete()
+
