@@ -275,6 +275,22 @@ class CreateHDCommand(Command):
 
 Command.register_command("createhd", CreateHDCommand)
 
+class DelSnapshotCommand(Command):
+    """Delete the current snapshot"""
+    usage = "delsnapshot <VM name>"
+
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        if len(args) == 0:
+            raise Exception("Missing VM name")
+        vm = VirtualMachine.find(args.pop(0))
+        snapshot = vm.getCurrentSnapshot()
+        progress = vm.deleteSnapshot(snapshot, wait=False)
+        show_progress(progress)
+
+Command.register_command("delsnapshot", DelSnapshotCommand)
+
 class EjectCommand(Command):
     """Eject a virtual machine"""
     usage = "boot <VM name>"
