@@ -4,6 +4,7 @@
 
 import pyVBox.VirtualBoxException
 from pyVBox.HardDisk import HardDisk
+from pyVBox.VirtualBox import VirtualBox
 from pyVBox.VirtualMachine import VirtualMachine
 
 import atexit
@@ -327,6 +328,20 @@ class HelpCommand(Command):
                 message("%10s: %s" % (name, cmd.__doc__))
 
 Command.register_command("help", HelpCommand)
+
+class OSTypesCommand(Command):
+    """Display all the available guest OS types"""
+    usage = "guestOSTypes"
+
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        osTypes = VirtualBox().getGuestOSTypes()
+        for ostype in osTypes:
+            print "%s (%s)" % (ostype.description, ostype.id)
+        return 0
+
+Command.register_command("guestOSTypes", OSTypesCommand)
 
 class PauseCommand(Command):
     """Pause a running VM"""
