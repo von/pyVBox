@@ -356,9 +356,11 @@ class VirtualMachine:
 
     def saveSettings(self):
         """Saves any changes to machine settings made since the session has been opened or a new machine has been created, or since the last call to saveSettings or discardSettings."""
-        # Use mutable machine associated with session.
-        session = self.getSession()
-        session.getIMachine().saveSettings()
+        if self._session:
+            # Use mutable machine associated with session.
+            self._session.getIMachine().saveSettings()
+        else:
+            self.getIMachine().saveSettings()
 
     #
     # Monitoring methods
