@@ -24,6 +24,10 @@ class VirtualBox:
         iosType = self._vbox.getGuestOSType(osTypeId)
         return GuestOSType(iosType)
 
+    def getGuestOSTypes(self):
+        """Return an array of all available guest OS Types."""
+        return [GuestOSType(t) for t in self._getArray('guestOSTypes')]
+
     def getIMachines(self):
         """Return array of machine objects registered within this VirtualBox instance."""
         return self._getArray('machines')
