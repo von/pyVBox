@@ -26,6 +26,8 @@ useful (open an issue to report a bug please).
 Kudos to [Nikolay Igotti](http://blogs.sun.com/nike/entry/python_api_to_the_virtualbox)
 and the vboxshell.py example that comes with the Virtualbox SDK.
 
+The home page for this code is [http://github.com/von/pyVBox](http://github.com/von/pyVBox).
+
 # Goals
 
  My goal is to provide functionality in the pyVBox library, exposed
