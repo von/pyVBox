@@ -5,6 +5,7 @@ from Medium import Medium
 from Progress import Progress
 from Session import Session
 from Snapshot import Snapshot
+from StorageController import StorageController
 from VirtualBox import VirtualBox
 import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
@@ -380,6 +381,94 @@ class VirtualMachine:
     def getHardDrives(self):
         """Return array of attached HardDrive instances."""
         return filter(lambda d: d.isHardDisk(), self.getAttachedDevices())
+
+    #
+    # StorageController methods
+    #
+    
+    def getStorageControllers(self):
+        """Return array of StorageControllers attached to this VM"""
+        return [StorageController(c) for c in self._getStorageControllers()]
+
+    def getStorageControllerByName(self, name):
+        """Return the StorageController with the given name"""
+        try:
+            controller = self.getIMachine().getStorageControllerByName(name)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        return StorageController(controller)
+
+    def getStorageControllerByInstance(self, instance):
+        """Return the StorageController with the given instance number"""
+        try:
+            controller = self.getIMachine().getStorageControllerByInstance(instance)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        return StorageController(controller)
+
+    def removeStorageController(self, name):
+        """Removes a storage controller from the machine.
+
+        Currently I'm getting a Operation aborted error invoking this method"""
+        try:
+            self.getIMachine().removeStorageController(name)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+
+    def doesStorageControllerExist(self, name):
+        """Return boolean indicating if StorageController with given name exists"""
+        exists = False
+        try:
+            controller = self.getStorageControllerByName(name)
+        except VirtualBoxException.VirtualBoxObjectNotFoundException, e:
+            exists = False
+        except:
+            raise
+        else:
+            exists = True
+        return exists
+
+    def addStorageController(self, type, name=None):
+        """Add a storage controller to the virtual machine
+
+        type should be the bus type of the new controller. Must be one of Constants.StorageBus_IDE, Constants.StorageBus_SATA, Constants.StorageBus_SCSI, or Constants.StorageBus_Floppy
+
+        name should be the name of the storage controller. If None, a name will be assigned.
+
+        Returns StorageController instance for new controller.
+        """
+        if name is None:
+            name = self._getNewStorageControllerName(type)
+        try:
+            controller = self.getIMachine().addStorageController(name, type)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        self.saveSettings()
+        return StorageController(controller)
+        
+    def _getNewStorageControllerName(self, type):
+        """Choose a name for a new StorageController of the given type.
+
+        Takes a string describing the controller type and adds an number to it to uniqify it if needed."""
+        baseNames = {
+            Constants.StorageBus_IDE    : "IDE Controller",
+            Constants.StorageBus_SATA   : "SATA Controller",
+            Constants.StorageBus_SCSI   : "SCSI Controller",
+            Constants.StorageBus_Floppy : "Floppy Controller"
+            }
+        if not baseNames.has_key(type):
+            # Todo: Use correct argument type here
+            raise Exception("Invalid type '%d'" % type)
+        count = 1
+        name = baseNames[type]
+        while self.doesStorageControllerExist(name):
+            count += 1
+            name = "%s %d" % (baseNames[type], count)
+        return name
 
     #
     # Settings functions

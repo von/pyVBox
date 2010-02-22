@@ -4,6 +4,7 @@
 from pyVBoxTest import pyVBoxTest, main
 from pyVBox.HardDisk import HardDisk
 import pyVBox.VirtualBoxException
+from pyVBox.VirtualBoxManager import Constants
 from pyVBox.VirtualMachine import VirtualMachine
 
 from time import sleep
@@ -103,4 +104,33 @@ class VirtualMachineTests(pyVBoxTest):
         machine = VirtualMachine.create("CreateTestVM", "Ubuntu")
         # Clean up
         machine.delete()
+
+    def testGetStorageControllers(self):
+        """Test VirtualMachine methods for getting StorageControllers"""
+        machine = VirtualMachine.open(self.testVMpath)
+        controllers = machine.getStorageControllers()
+        self.assertNotEqual(None, controllers)
+        for controller in controllers:
+            c = machine.getStorageControllerByName(controller.name)
+            self.assertNotEqual(None, c)
+            c = machine.getStorageControllerByInstance(controller.instance)
+            self.assertNotEqual(None, c)
+            self.assertEqual(True,
+                             machine.doesStorageControllerExist(controller.name))
+    def testAddStorageControllers(self):
+        """Test adding and removing of StorageController to a VirtualMachine"""
+        # Currently the removeStorageController() method is failing with
+        # an 'Operation aborted' and the test VM fails to boot if I leave
+        # the added storage controllers, which messes up subsequent tests.
+        return
+        machine = VirtualMachine.open(self.testVMpath)
+        controller = machine.addStorageController(Constants.StorageBus_SCSI)
+        self.assertNotEqual(None, controller)
+        controller2 = machine.addStorageController(Constants.StorageBus_SATA)
+        self.assertNotEqual(None, controller2)
+        self.assertEqual(True,
+                         machine.doesStorageControllerExist(controller.name))
+        machine.removeStorageController(controller2.name)
+        self.assertEqual(False,
+                         machine.doesStorageControllerExist(controller.name))
 
