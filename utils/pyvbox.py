@@ -237,9 +237,9 @@ class BootVMCommand(Command):
 
 Command.register_command("boot", BootVMCommand)
 
-class CloneCommand(Command):
+class CloneHDCommand(Command):
     """Clone a hard disk. Cloned disk will be registered."""
-    usage = "clone <source path> <target path>"
+    usage = "clonehd <source path> <target path>"
     
     @classmethod
     def invoke(cls, args):
@@ -255,7 +255,7 @@ class CloneCommand(Command):
         show_progress(progress)
         return 0
 
-Command.register_command("clone", CloneCommand)
+Command.register_command("clonehd", CloneHDCommand)
 
 class CreateHDCommand(Command):
     """Create a hard disk"""
