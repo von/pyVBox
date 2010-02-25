@@ -55,7 +55,7 @@ class Session(object):
         """Opens a new direct session with the given virtual machine."""
         try:
             isession = cls._createSession()
-            cls._vbox.openSession(isession, vm.getId())
+            cls._vbox.openSession(isession, vm.id)
         except Exception, ex:
             VirtualBoxException.handle_exception(ex)
             raise
@@ -66,7 +66,7 @@ class Session(object):
         """Opens a new remote session with the virtual machine for which a direct session is already open."""
         try:
             isession = cls._createSession()
-            cls._vbox.openExistingSession(isession, vm.getId())
+            cls._vbox.openExistingSession(isession, vm.id)
         except Exception, ex:
             VirtualBoxException.handle_exception(ex)
             raise
@@ -79,7 +79,7 @@ class Session(object):
         try:
             isession = cls._createSession()
             iprogress = cls._vbox.openRemoteSession(isession,
-                                                    vm.getId(),
+                                                    vm.id,
                                                     type,
                                                     env)
             progress = Progress(iprogress)

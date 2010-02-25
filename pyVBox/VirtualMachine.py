@@ -9,17 +9,54 @@ from StorageController import StorageController
 from VirtualBox import VirtualBox
 import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
+from Wrapper import Wrapper
 
 import os
 import os.path
 
-class VirtualMachine:
+class VirtualMachine(Wrapper):
+    # Properties directly inherited from IMachine
+    _passthruProperties = [
+        "accelerate2DVideoEnabled",
+        "accelerate3DEnabled",
+        "accessible",
+        "CPUCount",
+        "currentStateModified",
+        "description",
+        "guestPropertyNotificationPatterns",
+        "HardwareVersion",
+        "hardwareUUID",
+        "id",
+        "lastStateChange",
+        "logFolder",
+        "memoryBallonSize",
+        "memorySize",
+        "monitorCount",
+        "name",
+        "OSTypeId",
+        "sessionPid",
+        "sessionState",
+        "sessionType",
+        "settingsFilePath",
+        "settingsModified",
+        "snapshotCount",
+        "snapshotFolder",
+        "state",
+        "stateFilePath",
+        "statisticsUpdateInterval",
+        "teleporterAddress",
+        "teleporterEnabled",
+        "teleporterPassword",
+        "teleporterPort",
+        "VRAMSize",
+        ]
+
     _manager = VirtualBoxManager()
     _vbox = VirtualBox()
 
     def __init__(self, machine, session=None):
         """Return a VirtualMachine wrapper around given IMachine instance"""
-        self._machine = machine
+        self._wrappedInstance = machine
         # Our cached open session
         self._session = None
 
@@ -27,13 +64,7 @@ class VirtualMachine:
         self.closeSession()
 
     def __str__(self):
-        return self.getIMachine().name
-
-    # Pass any requests for unrecognized attributes or methods onto
-    # IMachibe object. Doing this this way since I don't kow how
-    # to inherit the XPCOM object directly.
-    def __getattr__(self, attr):
-        return eval("self._machine." + attr)
+        return self.name
 
     #
     # Top-level controls
@@ -185,7 +216,7 @@ class VirtualMachine:
         try:
             # Must close any open session to unregister
             self.closeSession()
-            self._vbox.unregisterMachine(self.getId())
+            self._vbox.unregisterMachine(self.id)
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
@@ -193,7 +224,7 @@ class VirtualMachine:
     def isRegistered(self):
         """Is this virtual machine registered?"""
         try:
-            self._vbox.getMachine(self.getId())
+            self._vbox.getMachine(self.id)
         except Exception, e:
             # XXX Should verify exception represents specific error
             return False
@@ -245,16 +276,9 @@ class VirtualMachine:
     # Attribute getters
     #
 
-    def getId(self):
-        """Return the UUID of the virtual machine."""
-        return self.getIMachine().id
-
     def getIMachine(self):
         """Return wrapped IMachine instance."""
-        return self._machine
-
-    def getName(self):
-        return self.getIMachine().name
+        return self._wrappedInstance
 
     def getOSType(self):
         """Returns an object describing the specified guest OS type."""
@@ -293,14 +317,14 @@ class VirtualMachine:
 
     def hasSession(self):
         """Does the machine have an open session?"""
-        state = self.getSessionState()
+        state = self.sessionState
         return ((state == Constants.SessionState_Open) or
                 (state == Constants.SessionState_Spawning) or
                 (state == Constants.SessionState_Closing))
 
     def isSessionClosed(self):
         """Does the VM not have an open session."""
-        state = self.getSessionState()
+        state = self.sessionState
         return ((state == Constants.SessionState_Null) or
                 (state == Constants.SessionState_Closed))
 
@@ -308,10 +332,6 @@ class VirtualMachine:
         """Wait for session to close."""
         while not self.isSessionClosed():
             self.waitForEvent()
-
-    def getSessionState(self):
-        """Return the session state of the VM."""
-        return self.getIMachine().sessionState
 
     #
     # Attach methods
@@ -503,13 +523,9 @@ class VirtualMachine:
         while not self.isDown():
             self.waitForEvent()
 
-    def getState(self):
-        """Return state of machine."""
-        return self.getIMachine().state
-
     def isDown(self):
         """Is machine down (PoweredOff, Aborted)?"""
-        state = self.getState()
+        state = self.state
         if ((state == Constants.MachineState_Aborted) or
             (state == Constants.MachineState_PoweredOff)):
             return True
@@ -517,14 +533,14 @@ class VirtualMachine:
 
     def isRunning(self):
         """Is machine Running?"""
-        state = self.getState()
+        state = self.state
         if (state == Constants.MachineState_Running):
             return True
         return False
 
     def isPaused(self):
         """Is machine Paused?"""
-        state = self.getState()
+        state = self.state
         if (state == Constants.MachineState_Paused):
             return True
         return Fals

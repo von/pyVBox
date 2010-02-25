@@ -15,7 +15,8 @@ class VirtualMachineTests(pyVBoxTest):
     def testOpen(self):
         """Test VirtualMachine.open()"""
         machine = VirtualMachine.open(self.testVMpath)
-        id = machine.getId()
+        self.assertNotEqual(None, machine.id)
+        self.assertNotEqual(None, machine.name)
         self.assertEqual(True, machine.isDown())
 
     def testOpenNotFound(self):
@@ -29,8 +30,8 @@ class VirtualMachineTests(pyVBoxTest):
         machine = VirtualMachine.open(self.testVMpath)
         machine.register()
         self.assertEqual(True, machine.isRegistered())
-        m2 = VirtualMachine.find(machine.getName())
-        self.assertEqual(machine.getId(), m2.getId())
+        m2 = VirtualMachine.find(machine.name)
+        self.assertEqual(machine.id, m2.id)
         machine.unregister()
         self.assertEqual(False, machine.isRegistered())
 
@@ -133,4 +134,15 @@ class VirtualMachineTests(pyVBoxTest):
         machine.removeStorageController(controller2.name)
         self.assertEqual(False,
                          machine.doesStorageControllerExist(controller.name))
+
+    def testSetAttr(self):
+        """Set setting of VirtualMachine attributes"""
+        machine = VirtualMachine.open(self.testVMpath)
+        # Double memory and make sure it persists
+        newMemorySize = machine.memorySize * 2
+        machine.memorySize = newMemorySize
+        machine.saveSettings()
+        self.assertEqual(newMemorySize, machine.memorySize)
+        machine2 = VirtualMachine.open(self.testVMpath)
+        self.assertEqual(newMemorySize, machine2.memorySize)
 
