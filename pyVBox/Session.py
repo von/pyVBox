@@ -4,15 +4,23 @@ from Progress import Progress
 from VirtualBox import VirtualBox
 import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
+from Wrapper import Wrapper
 
 import weakref
 
-class Session(object):
+class Session(Wrapper):
+    # Properties directly inherited from IMachine
+    _passthruProperties = [
+        "console",
+        "state",
+        "type",
+        ]
+
     _manager = VirtualBoxManager()
     _vbox = VirtualBox()
 
     def __init__(self, isession, vm):
-        self._session = isession
+        self._wrappedInstance = isession
         # Use a weak reference here to prevent circular reference with
         # and and VM that will hold up garbage collection.
         self._vm = weakref.ref(vm)
@@ -21,12 +29,6 @@ class Session(object):
         
     def __del__(self):
         self.close()
-
-    # Pass any requests for unrecognized attributes or methods onto
-    # ISession object. Doing this this way since I don't kow how
-    # to inherit the XPCOM object directly.
-    def __getattr__(self, attr):
-        return eval("self._session." + attr)
 
     @classmethod
     def open(cls, vm):
@@ -93,7 +95,7 @@ class Session(object):
         """Close any open session."""
         if not self.isClosed():
             try:
-                self._session.close()
+                self._wrappedInstance.close()
                 while not self.isClosed():
                     self._vbox.waitForEvent()
             except Exception, ex:
@@ -102,11 +104,7 @@ class Session(object):
 
     def getIMachine(self):
         """Return mutable IMachine object associated with session."""
-        return self._session.machine
-
-    def getState(self):
-        """Return session state."""
-        return self._session.state
+        return self._wrappedInstance.machine
 
     def isDirect(self):
         """Is this a direct session?"""
@@ -114,11 +112,11 @@ class Session(object):
 
     def isClosed(self):
         """Is this session closed?"""
-        return (self.getState() == Constants.SessionState_Closed)
+        return (self.state == Constants.SessionState_Closed)
 
     def isOpen(self):
         """Is this session open?"""
-        return (self.getState() == Constants.SessionState_Open)
+        return (self.state == Constants.SessionState_Open)
 
     @classmethod
     def _createSession(cls):
@@ -130,7 +128,7 @@ class Session(object):
 
         Throws exception if otherwise."""
         if not self.isOpen():
-            raise VirtualBoxException.VirtualBoxInvalidSessionStateException("Session in invalid state: %s" % self.getState())
+            raise VirtualBoxException.VirtualBoxInvalidSessionStateException("Session in invalid state: %s" % self.state)
 
 class RemoteSession(Session):
     """Class representing a remote session."""
