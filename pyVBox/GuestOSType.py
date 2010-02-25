@@ -1,12 +1,23 @@
 """Wrapper around IGuestOSType"""
 
-class GuestOSType:
+from Wrapper import Wrapper
+
+class GuestOSType(Wrapper):
+   # Properties directly inherited from IMachine
+    _passthruProperties = [
+        "adapterType",
+        "description",
+        "familyDescription",
+        "familyId",
+        "id",
+        "is64Bit",
+        "recommendedHDD",
+        "recommendedIOAPIC",
+        "recommendedRAM",
+        "recommendedVirtEx",
+        "recommendedVRAM",
+        ]
+
     def __init__(self, iguestOSType):
         assert(iguestOSType is not None)
-        self._guestOSType = iguestOSType
-
-    # Pass any requests for unrecognized attributes or methods onto
-    # IGuestOSType object. Doing this this way since I don't kow how
-    # to inherit the XPCOM object directly.
-    def __getattr__(self, attr):
-        return eval("self._guestOSType." + attr)
+        self._wrappedInstance = iguestOSType
