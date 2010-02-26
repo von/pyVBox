@@ -352,7 +352,7 @@ class VirtualMachine(Wrapper):
                                                controllerPort,
                                                device,
                                                deviceType,
-                                               medium.getId())
+                                               medium.id)
             self.saveSettings()
         except Exception, e:
             VirtualBoxException.handle_exception(e)
@@ -564,7 +564,7 @@ class VirtualMachine(Wrapper):
         """Given a device, find the IMediumAttachment object associated with its attachment on this machine."""
         mediumAttachments = self._getMediumAttachments()
         for attachment in mediumAttachments:
-            if attachment.medium.id == device.getId():
+            if attachment.medium.id == device.id:
                 return attachment
         raise VirtualBoxException.VirtualBoxPluggableDeviceManagerError(
             "No attachment for device \"%s\" on VM \"%s\" found" % (device,

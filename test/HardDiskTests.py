@@ -32,6 +32,6 @@ class HardDiskTests(pyVBoxTest):
         harddisk = HardDisk.open(self.testHDpath)
         self.assertEqual(True, HardDisk.isRegistered(self.testHDpath))
         hd = HardDisk.find(self.testHDpath)
-        self.assertEqual(harddisk.getId(), hd.getId())
+        self.assertEqual(harddisk.id, hd.id)
         harddisk.close()
         self.assertEqual(False, HardDisk.isRegistered(self.testHDpath))

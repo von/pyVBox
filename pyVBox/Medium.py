@@ -3,10 +3,29 @@
 from Progress import Progress
 import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
+from Wrapper import Wrapper
 
 import os.path
 
-class Medium:
+class Medium(Wrapper):
+    # Properties directly inherited from IMedium
+    _passthruProperties = [
+        "autoResize",
+        "description",
+        "deviceType",
+        "format",
+        "hostDrive",
+        "id",
+        "lastAccessError",
+        "location",
+        "logicalSize",
+        "name",
+        "readOnly",
+        "size",
+        "state",
+        "type",
+        ]
+
     _manager = VirtualBoxManager()
 
     DEVICE_MAPPINGS = {
@@ -21,13 +40,7 @@ class Medium:
     def __init__(self, imedium):
         """Return a Medium wrapper around given IMedium instance"""
         assert(imedium is not None)
-        self._medium = imedium
-
-    # Pass any requests for unrecognized attributes or methods onto
-    # IMedium object. Doing this this way since I don't kow how
-    # to inherit the XPCOM object directly.
-    def __getattr__(self, attr):
-        return eval("self._medium." + attr)
+        self._wrappedInstance = imedium
 
     #
     # Creation methods
@@ -42,7 +55,7 @@ class Medium:
             path = self._canonicalizeMediumPath(path)
             if newUUID:
                 # If target doesn't have storage, new UUID is created.
-                target=  self.create(path)
+                target= self.create(path)
             else:
                 # If target does have storage, UUID is copied.
                 target = self.createWithStorage(path, self.logicalSize)
@@ -85,66 +98,50 @@ class Medium:
         disk.createBaseStorage(size, variant, wait)
         return disk
 
-    #
-    # Attribute accessors
-    # 
-    def getId(self):
-        """Return UUID of the virtual machine."""
-        return self._medium.id
-
     def getIMedium(self):
         """Return IMedium object."""
-        return self._medium
-
-    def getName(self):
-        """Return name"""
-        return self._medium.name
+        return self._wrappedInstance
 
     def close(self):
         """Closes this medium."""
-        self._medium.close()
+        self._wrappedInstance.close()
 
     def basename(self):
         """Return the basename of the location of the storage unit holding medium data."""
         return os.path.basename(self.location)
 
-    def getType(self):
-        """Return a identifier of type of device"""
-        return self._medium.deviceType
-
     def getTypeAsString(self):
         """Return a human-readable string describing the type of device"""
-        type = self.getType()
-        if not self.DEVICE_MAPPINGS.has_key(type):
+        if not self.DEVICE_MAPPINGS.has_key(self.deviceType):
             return "unknown device type"
-        return self.DEVICE_MAPPINGS[type]
+        return self.DEVICE_MAPPINGS[self.deviceType]
 
     #
     # Methods for testing deviceType
     #
     def isFloppy(self):
         """Is this a Floppy?"""
-        return (self._medium.deviceType == Constants.DeviceType_Floppy)
+        return (self.deviceType == Constants.DeviceType_Floppy)
 
     def isCDorDVD(self):
         """Is this a CD or DVD image?"""
-        return (self._medium.deviceType == Constants.DeviceType_DVD)
+        return (self.deviceType == Constants.DeviceType_DVD)
 
     def isHardDisk(self):
         """Is this a HardDisk?"""
-        return (self._medium.deviceType == Constants.DeviceType_HardDisk)
+        return (self.deviceType == Constants.DeviceType_HardDisk)
 
     def isNetworkDevice(self):
         """Is this a Network device?"""
-        return (self._medium.deviceType == Constants.DeviceType_Network)
+        return (self.deviceType == Constants.DeviceType_Network)
     
     def isUSB(self):
         """Is this a USB device?"""
-        return (self._medium.deviceType == Constants.DeviceType_USB)
+        return (self.deviceType == Constants.DeviceType_USB)
     
     def isSharedFolder(self):
         """Is this a shared folder?"""
-        return (self._medium.deviceType == Constants.DeviceType_SharedFolder)
+        return (self.deviceType == Constants.DeviceType_SharedFolder)
 
     #
     # Internal string representations 
@@ -152,7 +149,7 @@ class Medium:
     def __str__(self):
         return self.name
 
-    # IMachine apparently defines this and its method will sometimes
+    # IMedium apparently defines this and its method will sometimes
     # be called in preference to our __str__() method.
     def __unicode__(self):
         return self.name
