@@ -1,36 +1,49 @@
 """Wrapper around IProgress object"""
 
 import VirtualBoxException
+from Wrapper import Wrapper
 
-class Progress:
+class Progress(Wrapper):
+    # Properties directly inherited from IProgress
+    _passthruProperties = [
+        "cancelable",
+        "canceled",
+        "completed",
+        "description",
+        "id",
+        "initiator",
+        "operation",
+        "operationCount",
+        "operationDescription",
+        "operationPercent",
+        "percent",
+        "resultCode",
+        "timeout",
+        "timeRemaining",
+        ]
+
     WaitIndefinite = -1
 
     def __init__(self, progress):
         """Return a Progress wrapper around given IProgress instance"""
-        self._progress = progress
-
-    # Pass any requests for unrecognized attributes or methods onto
-    # IProgress object. Doing this this way since I don't kow how
-    # to inherit the XPCOM object directly.
-    def __getattr__(self, attr):
-        return eval("self._progress." + attr)
+        self._wrappedInstance = progress
 
     def waitForCompletion(self, timeout = None):
         """Waits until the task is done (including all sub-operations).
 
-Timeout is in milliseconds. specify None for an indefinite wait."""
+        Timeout is in milliseconds, specify None for an indefinite wait."""
         if timeout is None:
             timeout = self.WaitIndefinite
         try:
-            self._progress.waitForCompletion(timeout)
+            self._wrappedInstance.waitForCompletion(timeout)
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
-        if (not self._progress.completed) and (timeout == self.WaitIndefinite):
+        if (not self.completed) and (timeout == self.WaitIndefinite):
             # TODO: This is not the right exception to return.
             raise VirtualBoxException.VirtualBoxException(
                 "Task %s did not complete: %s (%d)" % 
-                (self._progress.description,
-                 self._progress.errorInfo.text,
-                 self._progress.resultCode))
+                (self.description,
+                 self.errorInfo.text,
+                 self.resultCode))
 
