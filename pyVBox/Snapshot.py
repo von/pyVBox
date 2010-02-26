@@ -1,27 +1,38 @@
 """Wrapper around ISnapshot object"""
 
-class Snapshot(object):
+from Wrapper import Wrapper
+
+class Snapshot(Wrapper):
+    # Properties directly inherited from ISnapshot
+    _passthruProperties = [
+        "children",
+        "description",
+        "id",
+        "machine",
+        "name",
+        "online",
+        "parent",
+        "timeStamp",
+        ]
+
     def __init__(self, isnapshot):
         assert(isnapshot is not None)
-        self._snapshot = isnapshot
+        self._wrappedInstance = isnapshot
 
-    # Pass any requests for unrecognized attributes or methods onto
-    # ISnapshot object. Doing this this way since I don't kow how
-    # to inherit the XPCOM object directly.
-    def __getattr__(self, attr):
-        return eval("self._snapshot." + attr)
-
-    def getMachine(self):
+    @property
+    def machine(self):
         """Return VirtualMachine object associated wit this snapshot"""
         import VirtualMachine
         return VirtualMachine(self.machine)
 
-    def getParent(self):
+    @property
+    def parent(self):
         """Return parent snapshot (a snapshot this one is based on), or null if the snapshot has no parent (i.e. is the first snapshot). """
         if self.parent is None:
             return None
         return Snapshot(self.parent)
 
-    def getChildren(self):
+    @property
+    def children(self):
         """Return child snapshots (all snapshots having this one as a parent)."""
         return [Snapshot(child) for child in self.children]
