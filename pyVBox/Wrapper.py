@@ -1,3 +1,4 @@
+import VirtualBoxException
 
 class Wrapper(object):
     """Base class for wrappers around VirtualBox XPCOM-based objects.
@@ -25,7 +26,11 @@ class Wrapper(object):
 
     def __setattr__(self, attr, value):
         if self._wrappedInstance and (attr in self._passthruProperties):
-            setattr(self._wrappedInstance, attr, value)
+            try:
+                setattr(self._wrappedInstance, attr, value)
+            except Exception, e:
+                VirtualBoxException.handle_exception(e)
+                raise
         self.__dict__[attr] = value
 
     def __delattr__(self, attr):
