@@ -41,4 +41,4 @@ class Constants:
     # XPCOM class directly.
     class __metaclass__(type):
         def __getattr__(cls, name):
-            return eval("cls._manager.constants." + name)
+            return getattr(cls._manager.constants, name)
