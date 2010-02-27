@@ -233,12 +233,15 @@ class VirtualMachine(Wrapper):
 
     def isRegistered(self):
         """Is this virtual machine registered?"""
+        from VirtualBoxException import VirtualBoxObjectNotFoundException
         try:
-            self._vbox.getMachine(self.id)
+            VirtualMachine.get(self.id)
+            registered = True
+        except VirtualBoxObjectNotFoundException, e:
+            registered = False
         except Exception, e:
-            # XXX Should verify exception represents specific error
-            return False
-        return True
+            raise
+        return registered
 
     #
     # Snapshot methods
