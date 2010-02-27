@@ -11,6 +11,7 @@ class pyVBoxTest(unittest.TestCase):
     testHDpath = "test/appliances/TestHD.vdi"
     bogusHDpath = "/bogus/path"
     testVMpath = "test/appliances/TestVM.xml"
+    testVMname = "TestVM"
     bogusVMpath = "/bogus/path"
 
     def setUp(self):
@@ -22,11 +23,16 @@ class pyVBoxTest(unittest.TestCase):
     def _cleanup(self):
         """Unregister test HD and VM if they are registered."""
         # Do machine first to detach any HDs
-        machine = VirtualMachine.open(self.testVMpath)
-        machine.eject()
-        if HardDisk.isRegistered(self.testHDpath):
+        try:
+            machine = VirtualMachine.find(self.testVMname)
+            machine.eject()
+        except:
+            pass
+        try:
             harddisk = HardDisk.find(self.testHDpath)
             harddisk.close()
+        except:
+            pass
 
     
 def main():
