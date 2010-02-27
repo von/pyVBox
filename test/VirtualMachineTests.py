@@ -52,9 +52,9 @@ class VirtualMachineTests(pyVBoxTest):
         """Test VirtualMachine.eject()"""
         machine = VirtualMachine.open(self.testVMpath)
         machine.register()
+        self.assertEqual(True, machine.isRegistered())
         harddisk = HardDisk.open(self.testHDpath)
         machine.attachDevice(harddisk)
-        self.assertEqual(True, machine.isRegistered())
         machine.eject()
         self.assertEqual(False, machine.isRegistered())
         harddisk.close()
@@ -85,6 +85,7 @@ class VirtualMachineTests(pyVBoxTest):
         self.assertEqual(snapshotName, snapshot.name)
         machine.deleteSnapshot(snapshot)
         self.assertEqual(None, machine.getCurrentSnapshot())
+        machine.unregister()
         
     def testGet(self):
         """Test VirtualMachine.get() method"""
@@ -97,6 +98,7 @@ class VirtualMachineTests(pyVBoxTest):
         m2 = VirtualMachine.get(machine.id)
         self.assertNotEqual(None, m2)
         self.assertEqual(machine.id, m2.id)
+        machine.unregister()
 
     def testGetAll(self):
         """Test getAll() method"""
