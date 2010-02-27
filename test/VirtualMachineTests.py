@@ -86,6 +86,18 @@ class VirtualMachineTests(pyVBoxTest):
         machine.deleteSnapshot(snapshot)
         self.assertEqual(None, machine.getCurrentSnapshot())
         
+    def testGet(self):
+        """Test VirtualMachine.get() method"""
+        machine = VirtualMachine.open(self.testVMpath)
+        # Should fail since not registered yet
+        self.assertRaises(
+            pyVBox.VirtualBoxException.VirtualBoxObjectNotFoundException,
+            VirtualMachine.get, machine.id)
+        machine.register()
+        m2 = VirtualMachine.get(machine.id)
+        self.assertNotEqual(None, m2)
+        self.assertEqual(machine.id, m2.id)
+
     def testGetAll(self):
         """Test getAll() method"""
         machines = VirtualMachine.getAll()

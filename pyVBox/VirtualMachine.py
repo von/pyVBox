@@ -164,6 +164,16 @@ class VirtualMachine(Wrapper):
         return VirtualMachine(machine)
 
     @classmethod
+    def get(cls, id):
+        """Attempts to find a virtual machine given its UUID."""
+        try:
+            machine = cls._vbox.getMachine(id)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        return VirtualMachine(machine)
+
+    @classmethod
     def create(cls, name, osTypeId, baseFolder=None, id=None, register=True):
         """Create a new virtual machine with the given name and osType.
     
