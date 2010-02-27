@@ -12,10 +12,10 @@ class VirtualBoxTests(pyVBoxTest):
         """Test VirtualBox()"""
         vbox = VirtualBox()
 
-    def testGetGuestOSTypes(self):
+    def testGuestOSTypes(self):
         """Test VirtualBox.getGustOSTypes()"""
         vbox = VirtualBox()
-        osTypes = vbox.getGuestOSTypes()
+        self.assertNotEqual(None, vbox.guestOSTypes)
 
 if __name__ == '__main__':
     main()

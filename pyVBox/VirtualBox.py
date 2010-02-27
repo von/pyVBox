@@ -5,39 +5,58 @@ This is not used at this time."""
 from GuestOSType import GuestOSType
 from VirtualBoxException import VirtualBoxException
 from VirtualBoxManager import VirtualBoxManager
+from Wrapper import Wrapper
 
 import os.path
 
-class VirtualBox:
+class VirtualBox(Wrapper):
+    # Properties directly inherited from IVirtualMachine
+    _passthruProperties = [
+        "homeFolder",
+        "packageType",
+        "revision",
+        "settingsFilePath",
+        "version",
+
+        # Also allow direct access to these methods. These shouldn't
+        # be used directly, buy only by other pyVBox classes.
+        "createMachine",
+        "findMachine",
+        "getMachine",
+        "openExistingSession",
+        "openMachine",
+        "openRemoteSession",
+        "openSession",
+        "registerMachine",
+        "unregisterMachine",
+        ]
+
     def __init__(self):
         self._manager = VirtualBoxManager()
-        self._vbox = self._manager.getIVirtualBox()
-
-    # Pass any requests for unrecognized attributes or methods onto
-    # IVirtualBox object. Doing this this way since I don't kow how
-    # to inherit the XPCOM object directly.
-    def __getattr__(self, attr):
-        return eval("self._vbox." + attr)
+        self._wrappedInstance = self._manager.getIVirtualBox()
 
     def getGuestOSType(self, osTypeId):
         """Returns an object describing the specified guest OS type."""
-        iosType = self._vbox.getGuestOSType(osTypeId)
+        iosType = self._wrappedInstance.getGuestOSType(osTypeId)
         return GuestOSType(iosType)
 
-    def getGuestOSTypes(self):
+    @property
+    def guestOSTypes(self):
         """Return an array of all available guest OS Types."""
         return [GuestOSType(t) for t in self._getArray('guestOSTypes')]
 
-    def getIMachines(self):
+    @property
+    def machines(self):
         """Return array of machine objects registered within this VirtualBox instance."""
-        return self._getArray('machines')
+        from VirtualMachine import VirtualMachine
+        return [VirtualMachine(vm) for vm in self._getArray('machines')]
 
     def waitForEvent(self):
         self._manager.waitForEvents()
 
     def _getArray(self, arrayName):
         """Return the array identified by the given name"""
-        return self._manager.getArray(self._vbox, arrayName)
+        return self._manager.getArray(self._wrappedInstance, arrayName)
 
 
 class VirtualBoxMonitor:

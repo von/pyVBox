@@ -204,13 +204,7 @@ class VirtualMachine(Wrapper):
     @classmethod
     def getAll(cls):
         """Return an array of all known virtual machines"""
-        try:
-            imachines = cls._vbox.getIMachines()
-            machines = [VirtualMachine(machine) for machine in imachines]
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
-        return machines
+        return cls._vbox.machines
             
     #
     # Registration methods
