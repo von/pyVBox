@@ -144,6 +144,9 @@ class VirtualMachine(Wrapper):
     def open(cls, path):
         """Opens a virtual machine from the existing settings file.
 
+        Note that calling open() on a VM that is already registered will
+        throw a VirtualBoxFileNotFoundException except.
+
         Throws VirtualBoxFileNotFoundException if file not found."""
         try:
             path = cls._canonicalizeVMPath(path)
