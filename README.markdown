@@ -46,8 +46,8 @@ that the VM doesn't have to be suspended.
 'base VMs' for different OS'es and then when I want a VM for a
 specific application I copy the base VM and customize the copy. You
 can do this with a combination of VBoxManage and the VirutalBox GUI,
-but it's a multi-step process. *In Progress:* I can clone the hard
-drives, but need to write the code to clode the VM itself.
+but it's a multi-step process. *DONE:* the 'clone' command will clone
+a VM, not perfectly, but well enough the clone will boot.
 
 One I accomplish the above, I'll probably release 1.0 and then decide
 what comes next.
