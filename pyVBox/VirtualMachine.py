@@ -29,7 +29,6 @@ class VirtualMachine(Wrapper):
         "id",
         "lastStateChange",
         "logFolder",
-        "memoryBallonSize",
         "memorySize",
         "monitorCount",
         "name",
