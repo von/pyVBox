@@ -326,9 +326,13 @@ class HelpCommand(Command):
                     message("Unknown command '%s'" % name)
         else:
             message("Available commands:")
-            for name in Command.registered_commands:
+            commands = Command.registered_commands.keys()
+            commands.sort()
+            # What's the length of the longer command name?
+            longestNameLen = max(map(len, commands))
+            for name in commands:
                 cmd = Command.lookup_command_by_name(name)
-                message("%10s: %s" % (name, cmd.__doc__))
+                message("%*s: %s" % (longestNameLen, name, cmd.__doc__))
 
 Command.register_command("help", HelpCommand)
 
