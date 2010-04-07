@@ -110,6 +110,10 @@ class Medium(Wrapper):
         """Return the basename of the location of the storage unit holding medium data."""
         return os.path.basename(self.location)
 
+    def dirname(self):
+        """Return the dirname of the location of the storage unit holding medium data."""
+        return os.path.dirname(self.location)
+
     def getTypeAsString(self):
         """Return a human-readable string describing the type of device"""
         if not self.DEVICE_MAPPINGS.has_key(self.deviceType):
