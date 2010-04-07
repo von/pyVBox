@@ -9,7 +9,7 @@ to hide those changes. The software also includes a script,
 utils/pyVbox.py, that provides the ability to manipulate VMs (like
 VBoxMange).
 
-This code is written to the 3.1 version of VirtualBox (3.1.2
+This code is written to the 3.1 version of VirtualBox (3.1.6
 specifically). I have not tried it against any other version.
 
 This software is independently created from VirtualBox and Sun. No
