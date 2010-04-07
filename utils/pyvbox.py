@@ -318,9 +318,12 @@ class HelpCommand(Command):
         """Invoke the command. Return exit code for program."""
         if len(args) > 0:
             for name in args:
-                cmd = Command.lookup_command_by_name(name)
-                message("%10s: %s" % (name, cmd.__doc__))
-                message("%10s  usage: %s" % ("", cmd.usage))
+                try:
+                    cmd = Command.lookup_command_by_name(name)
+                    message("%10s: %s" % (name, cmd.__doc__))
+                    message("%10s  usage: %s" % ("", cmd.usage))
+                except KeyError, e:
+                    message("Unknown command '%s'" % name)
         else:
             message("Available commands:")
             for name in Command.registered_commands:
