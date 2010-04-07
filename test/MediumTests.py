@@ -41,3 +41,13 @@ class MediumTests(pyVBoxTest):
         """Test Medium.createWithStorage()"""
         medium = Medium.createWithStorage(self.cloneHDpath, 1)
         self.assertEqual(Constants.MediumState_Created, medium.state)
+
+    def testClone(self):
+        """Test Medium.clone()"""
+        harddisk = HardDisk.open(self.testHDpath)
+        harddisk.clone(self.cloneHDpath)
+        clonedisk = HardDisk.find(self.cloneHDpath)
+        self.assertEqual(harddisk.format, harddisk.format)
+        self.assertEqual(harddisk.logicalSize, harddisk.logicalSize)
+        self.assertNotEqual(harddisk.id, clonedisk.id)
+
