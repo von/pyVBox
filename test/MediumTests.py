@@ -3,7 +3,9 @@
 
 from pyVBoxTest import pyVBoxTest, main
 from pyVBox.HardDisk import HardDisk
+from pyVBox.Medium import Medium
 from pyVBox.VirtualBoxException import VirtualBoxException
+from pyVBox.VirtualBoxManager import Constants
 
 import os.path
 
@@ -29,3 +31,13 @@ class MediumTests(pyVBoxTest):
         harddisk = HardDisk.open(self.testHDpath)
         self.assertNotEqual(None, harddisk.type)
         self.assertEqual("hard drive", harddisk.getTypeAsString())
+
+    def testCreate(self):
+        """Test Medium.create()"""
+        medium = Medium.create(self.cloneHDpath)
+        self.assertEqual(Constants.MediumState_NotCreated, medium.state)
+
+    def testCreateWithStorage(self):
+        """Test Medium.createWithStorage()"""
+        medium = Medium.createWithStorage(self.cloneHDpath, 1)
+        self.assertEqual(Constants.MediumState_Created, medium.state)
