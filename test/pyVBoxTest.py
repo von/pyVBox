@@ -1,5 +1,6 @@
 """Base class for all pyVBox unittests."""
 
+import os
 import unittest
 
 from pyVBox.HardDisk import HardDisk
@@ -9,6 +10,7 @@ from pyVBox.VirtualMachine import VirtualMachine
 class pyVBoxTest(unittest.TestCase):
     """Base class for all pyVBox unittests."""
     testHDpath = "test/appliances/TestHD.vdi"
+    cloneHDpath = "test/appliances/CloneHD.vdi"
     bogusHDpath = "/bogus/path"
     testVMpath = "test/appliances/TestVM.xml"
     testVMname = "TestVM"
@@ -33,7 +35,15 @@ class pyVBoxTest(unittest.TestCase):
             harddisk.close()
         except:
             pass
-
+        try:
+            clonedisk = HardDisk.find(self.cloneHDpath)
+            clonedisk.close()
+        except:
+            pass
+        try:
+            os.remove(self.cloneHDpath)
+        except:
+            pass
     
 def main():
     """Run tests."""
