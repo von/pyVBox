@@ -160,3 +160,23 @@ class VirtualMachineTests(pyVBoxTest):
         machine2 = VirtualMachine.open(self.testVMpath)
         self.assertEqual(newMemorySize, machine2.memorySize)
 
+    def testClone(self):
+        """Test VirtualMachine.clone() method"""
+        machine = VirtualMachine.open(self.testVMpath)
+        newMachine = machine.clone("CloneTestVM")
+        self.assertEqual(machine.description, newMachine.description)
+        self.assertEqual(machine.CPUCount, newMachine.CPUCount)
+        self.assertEqual(machine.memorySize, newMachine.memorySize)
+        self.assertEqual(machine.VRAMSize, newMachine.VRAMSize)
+        self.assertEqual(machine.accelerate3DEnabled,
+                         newMachine.accelerate3DEnabled)
+        self.assertEqual(machine.accelerate2DVideoEnabled,
+                         newMachine.accelerate2DVideoEnabled)
+        self.assertEqual(machine.monitorCount,
+                         newMachine.monitorCount)
+        controllers = machine.getStorageControllers()
+        newControllers = newMachine.getStorageControllers()
+        self.assertEqual(len(controllers), len(newControllers))
+        # Todo: compare individual controllers
+        # Clean up
+        newMachine.delete()

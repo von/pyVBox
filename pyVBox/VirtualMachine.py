@@ -200,6 +200,50 @@ class VirtualMachine(Wrapper):
             vm.register()
         return vm
 
+    def clone(self, name, baseFolder=None, id=None, register=True,
+              description=None):
+        """Clone this virtual machine as new VM with given name.
+
+        Clones basic properties of machine plus any storage
+        controllers. Does not clone any attached storage.
+
+        If baseFolder is not None, it should be a path to use instead
+        of the default machine settings folder for storing the new VM.
+
+        If id is not None, it will be used as the UUID of the
+        new machine. Otherwise one will be automatically generated.
+
+        If register is True, register new machine after creation.
+
+        If description is None, copy description from source, otherwise use description."""
+        vm = VirtualMachine.create(name,
+                                   self.OSTypeId,
+                                   baseFolder=baseFolder,
+                                   id=id,
+                                   # Once we register, we cannot make
+                                   # changes without opening a
+                                   # session, so defer any
+                                   # registration.
+                                   register=False)
+        if description:
+            vm.description = description
+        else:
+            vm.description = self.description
+        vm.CPUCount = self.CPUCount
+        vm.memorySize = self.memorySize
+        vm.VRAMSize = self.VRAMSize
+        vm.accelerate3DEnabled = self.accelerate3DEnabled
+        vm.accelerate2DVideoEnabled = self.accelerate2DVideoEnabled
+        vm.monitorCount = self.monitorCount
+        controllers = self.getStorageControllers()
+        for controller in controllers:
+            vm.addStorageController(controller.bus,
+                                    name = controller.name)
+        vm.saveSettings()
+        if register:
+            vm.register()
+        return vm
+
     @classmethod
     def getAll(cls):
         """Return an array of all known virtual machines"""

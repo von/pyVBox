@@ -237,6 +237,42 @@ class BootVMCommand(Command):
 
 Command.register_command("boot", BootVMCommand)
 
+class CloneCommand(Command):
+    """Clone a VM. Cloned VM will be registered."""
+    usage = "clone <source VM name> <target VM name>"
+    
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        if len(args) < 1:
+            raise Exception("Missing source VM name argument")
+        srcVM = VirtualMachine.find(args.pop(0))
+        if len(args) < 1:
+            raise Exception("Missing target VM name argument")
+        targetName = args.pop(0)
+        message("Cloning %s to %s" % (srcVM, targetName))
+        cloneVM = srcVM.clone(targetName)
+        # Now clone and attach disks
+        disks = srcVM.getHardDrives()
+        for disk in disks:
+            # Generate new HD filename by prefixing new VM name.
+            # Not the greatest, but not sure what the best way is.
+            targetFilename = os.path.join(disk.dirname(),
+                                          "%s-%s" % (targetName, disk.name))
+            # Todo: Need to resolve file already existing here.
+            message("Cloning disk %s to %s (%d bytes)"
+                    % (disk,
+                       os.path.basename(targetFilename),
+                       disk.size))
+            progress = disk.clone(targetFilename, wait=False)
+            show_progress(progress)
+            cloneHD = HardDisk.find(targetFilename)
+            message("Attaching %s to %s" % (cloneHD, cloneVM))
+            cloneVM.attachDevice(cloneHD)
+        return 0
+
+Command.register_command("clone", CloneCommand)
+
 class CloneHDCommand(Command):
     """Clone a hard disk. Cloned disk will be registered."""
     usage = "clonehd <source path> <target path>"
