@@ -501,7 +501,7 @@ class VMCommand(Command):
             vms = VirtualMachine.getAll()
             verboseMsg("Registered VMs:")
             for vm in vms:
-                print "\t%s" % vm.getName()
+                print "\t%s" % vm
         else:
             for vmName in args:
                 vm = VirtualMachine.find(vmName)
