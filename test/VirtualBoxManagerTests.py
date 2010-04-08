@@ -10,6 +10,7 @@ class VirtualBoxManagerTests(pyVBoxTest):
     def testInit(self):
         """Test VirtualBoxManager()"""
         vboxManager = VirtualBoxManager()
+        del vboxManager
 
     def testGetVirtualBox(self):
         """Test VirtualBoxManager.getVirtualBox()"""

@@ -12,6 +12,10 @@ class VirtualBoxManager(vboxapi.VirtualBoxManager):
             VirtualBoxException.handle_exception(e)
             raise
 
+    def __del__(self):
+        # Not sure what this does. Copying use from vboxshell.py.
+        vboxapi.VirtualBoxManager.deinit(self)
+
     def waitForEvents(self, timeout=None):
         """Wait for an event.
 
