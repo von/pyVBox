@@ -132,20 +132,21 @@ class VirtualMachineTests(pyVBoxTest):
             self.assertNotEqual(None, c)
             self.assertEqual(True,
                              machine.doesStorageControllerExist(controller.name))
-    def testAddStorageControllers(self):
+    def testAddStorageController(self):
         """Test adding and removing of StorageController to a VirtualMachine"""
         # Currently the removeStorageController() method is failing with
         # an 'Operation aborted' and the test VM fails to boot if I leave
         # the added storage controllers, which messes up subsequent tests.
         return
+        controllerName="TestController"
         machine = VirtualMachine.open(self.testVMpath)
-        controller = machine.addStorageController(Constants.StorageBus_SCSI)
+        controller = machine.addStorageController(Constants.StorageBus_SCSI,
+                                                  name=controllerName)
         self.assertNotEqual(None, controller)
-        controller2 = machine.addStorageController(Constants.StorageBus_SATA)
-        self.assertNotEqual(None, controller2)
+        self.assertEqual(controllerName, controller.name)
         self.assertEqual(True,
                          machine.doesStorageControllerExist(controller.name))
-        machine.removeStorageController(controller2.name)
+        machine.removeStorageController(controller.name)
         self.assertEqual(False,
                          machine.doesStorageControllerExist(controller.name))
 
