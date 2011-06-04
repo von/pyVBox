@@ -6,15 +6,18 @@ import VirtualBoxException
 class VirtualBoxManager(vboxapi.VirtualBoxManager):
 
     def __init__(self, style=None, params=None):
+        self.__call_deinit = False
         try:
             vboxapi.VirtualBoxManager.__init__(self, style, params)
+            self.__call_deinit = True
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
 
     def __del__(self):
-        # Not sure what this does. Copying use from vboxshell.py.
-        vboxapi.VirtualBoxManager.deinit(self)
+        if self.__call_deinit:
+            # Not sure what this does. Copying use from vboxshell.py.
+            vboxapi.VirtualBoxManager.deinit(self)
 
     def waitForEvents(self, timeout=None):
         """Wait for an event.
