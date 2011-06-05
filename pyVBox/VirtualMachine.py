@@ -173,7 +173,8 @@ class VirtualMachine(Wrapper):
         return cls.find(id)
 
     @classmethod
-    def create(cls, name, osTypeId, baseFolder=None, id=None, register=True):
+    def create(cls, name, osTypeId, baseFolder=None, id=None, register=True,
+               forceOverwrite=False):
         """Create a new virtual machine with the given name and osType.
     
         If baseFolder is not None, it should be a path to use instead
@@ -187,7 +188,8 @@ class VirtualMachine(Wrapper):
             machine = cls._vbox.createMachine(name,
                                               osTypeId,
                                               baseFolder,
-                                              id)
+                                              id,
+                                              forceOverwrite)
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise

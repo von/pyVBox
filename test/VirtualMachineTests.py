@@ -116,7 +116,10 @@ class VirtualMachineTests(pyVBoxTest):
 
     def testCreate(self):
         """Test VirtualMachine.create() method"""
-        machine = VirtualMachine.create("CreateTestVM", "Ubuntu")
+        # If VM already exists and we don't specify forceOverwrite=True
+        # this will raise a VirtualBoxFileError
+        machine = VirtualMachine.create("CreateTestVM", "Ubuntu",
+                                        forceOverwrite=True)
         # Clean up
         machine.delete()
 
