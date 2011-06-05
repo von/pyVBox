@@ -158,10 +158,10 @@ class VirtualMachine(Wrapper):
         return VirtualMachine(machine)
 
     @classmethod
-    def find(cls, vmName):
-        """Attempts to find a virtual machine given its name."""
+    def find(cls, nameOrId):
+        """Attempts to find a virtual machine given its name or UUID."""
         try:
-            machine = cls._vbox.findMachine(vmName)
+            machine = cls._vbox.findMachine(nameOrId)
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
@@ -170,12 +170,7 @@ class VirtualMachine(Wrapper):
     @classmethod
     def get(cls, id):
         """Attempts to find a virtual machine given its UUID."""
-        try:
-            machine = cls._vbox.getMachine(id)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
-        return VirtualMachine(machine)
+        return cls.find(id)
 
     @classmethod
     def create(cls, name, osTypeId, baseFolder=None, id=None, register=True):
