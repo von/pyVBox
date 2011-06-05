@@ -48,4 +48,8 @@ class Constants:
     # XPCOM class directly.
     class __metaclass__(type):
         def __getattr__(cls, name):
-            return getattr(cls._manager.constants, name)
+            try:
+                return getattr(cls._manager.constants, name)
+            except AttributeError as e:
+                raise AttributeError("%s.%s not found" % (cls.__name__,
+                                                          name))
