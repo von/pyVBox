@@ -36,6 +36,6 @@ class Wrapper(object):
     def __delattr__(self, attr):
        if self._wrappedInstance and (attr in self._passthruProperties):
            raise AttributeError("Cannot delete attribute '%s'" % attr)
-       delattr(self, attr)
+       del self.__dict__[attr]
 
             
