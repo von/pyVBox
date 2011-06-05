@@ -68,11 +68,11 @@ class Session(Wrapper):
         """Opens a new remote session with the virtual machine for which a direct session is already open."""
         try:
             isession = cls._createSession()
-            cls._vbox.openExistingSession(isession, vm.id)
+            vm.lockMachine(isession, Constants.LockType_Shared)
         except Exception, ex:
             VirtualBoxException.handle_exception(ex)
             raise
-        # TODO: Check session.state == SessionState_Open as per vboxshell.py
+        # TODO: Check session.state == SessionState_Locked as per vboxshell.py
         return Session(isession, vm)
 
     @classmethod
@@ -92,11 +92,11 @@ class Session(Wrapper):
         return RemoteSession(isession, vm)
 
     def close(self):
-        """Close any open session."""
-        if not self.isClosed():
+        """Close any open session, unlocking the machine."""
+        if self.isLocked():
             try:
-                self._wrappedInstance.close()
-                while not self.isClosed():
+                self._wrappedInstance.unlockMachine()
+                while self.isLocked():
                     self._vbox.waitForEvent()
             except Exception, ex:
                 VirtualBoxException.handle_exception(ex)
@@ -108,15 +108,15 @@ class Session(Wrapper):
 
     def isDirect(self):
         """Is this a direct session?"""
-        return (self.type == Constants.SessionType_Direct)
+        return (self.type != Constants.SessionType_Remote)
 
-    def isClosed(self):
-        """Is this session closed?"""
-        return (self.state == Constants.SessionState_Closed)
+    def isLocked(self):
+        """Is this session locked?"""
+        return (self.state == Constants.SessionState_Locked)
 
-    def isOpen(self):
-        """Is this session open?"""
-        return (self.state == Constants.SessionState_Open)
+    def isUnlocked(self):
+        """Is this session unlocked?"""
+        return (self.state == Constants.SessionState_Unlocked)
 
     @classmethod
     def _createSession(cls):
@@ -127,7 +127,7 @@ class Session(Wrapper):
         """Check and make sure session appears to be valid.
 
         Throws exception if otherwise."""
-        if not self.isOpen():
+        if not self.isLocked():
             raise VirtualBoxException.VirtualBoxInvalidSessionStateException("Session in invalid state: %s" % self.state)
 
 class RemoteSession(Session):

@@ -28,6 +28,7 @@ class VirtualMachine(Wrapper):
         "hardwareUUID",
         "id",
         "lastStateChange",
+        "lockMachine",
         "logFolder",
         "memorySize",
         "monitorCount",
@@ -349,7 +350,7 @@ class VirtualMachine(Wrapper):
 
     def getSession(self):
         """Return a session to the VM."""
-        if (not self._session) or (self._session.isClosed()):
+        if (not self._session) or (self.isSessionClosed()):
             self._session = Session.open(self)
         return self._session
 
@@ -371,15 +372,15 @@ class VirtualMachine(Wrapper):
     def hasSession(self):
         """Does the machine have an open session?"""
         state = self.sessionState
-        return ((state == Constants.SessionState_Open) or
+        return ((state == Constants.SessionState_Locked) or
                 (state == Constants.SessionState_Spawning) or
-                (state == Constants.SessionState_Closing))
+                (state == Constants.SessionState_Unlocking))
 
     def isSessionClosed(self):
         """Does the VM not have an open session."""
         state = self.sessionState
         return ((state == Constants.SessionState_Null) or
-                (state == Constants.SessionState_Closed))
+                (state == Constants.SessionState_Unlocked))
 
     def waitForSessionClose(self):
         """Wait for session to close."""
