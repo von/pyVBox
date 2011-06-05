@@ -10,9 +10,7 @@ class HardDisk(Medium):
     # Creation metods
     #
     @classmethod
-    def open(cls, path, accessMode = None,
-             setImageId=False, imageId="",
-             setParentId=False, parentId=""):
+    def open(cls, path, accessMode = None):
         """Opens a hard disk from an existing location, optionally replacing the image UUID and/or parent UUID.
 
         Throws VirtualBoxFileError if file not found."""
@@ -21,9 +19,9 @@ class HardDisk(Medium):
                 accessMode = Constants.AccessMode_ReadWrite
             # path must be absolute path
             path = cls._canonicalizeMediumPath(path)
-            medium = cls._getVBox().openHardDisk(path, accessMode,
-                                                 setImageId, imageId,
-                                                 setParentId, parentId)
+            medium = cls._getVBox().openMedium(path,
+                                               Constants.DeviceType_HardDisk,
+                                               accessMode)
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
@@ -34,7 +32,8 @@ class HardDisk(Medium):
         """Returns a hard disk that uses the given path to store medium data."""
         try:
             path = cls._canonicalizeMediumPath(path)
-            medium = cls._getVBox().findHardDisk(path)
+            medium = cls._getVBox().findMedium(path,
+                                               Constants.DeviceType_HardDisk)
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
