@@ -28,7 +28,6 @@ class VirtualBox(Wrapper):
         "openRemoteSession",
         "openSession",
         "registerMachine",
-        "unregisterMachine",
         ]
 
     def __init__(self):

@@ -48,6 +48,7 @@ class VirtualMachine(Wrapper):
         "teleporterEnabled",
         "teleporterPassword",
         "teleporterPort",
+        "unregister",
         "VRAMSize",
         ]
 
@@ -262,12 +263,13 @@ class VirtualMachine(Wrapper):
             VirtualBoxException.handle_exception(e)
             raise
 
-    def unregister(self):
+    def unregister(self, cleanup_mode=Constants.CleanupMode_UnregisterOnly):
         """Unregisters the machine previously registered using register()."""
         try:
             # Must close any open session to unregister
             self.closeSession()
-            self._vbox.unregisterMachine(self.id)
+            machine = self.getIMachine()
+            machine.unregister(cleanup_mode)
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
