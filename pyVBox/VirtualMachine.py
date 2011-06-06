@@ -405,7 +405,7 @@ class VirtualMachine(Wrapper):
                                                controllerPort,
                                                device,
                                                deviceType,
-                                               medium.id)
+                                               medium.getIMedium())
             self.saveSettings()
         except Exception, e:
             VirtualBoxException.handle_exception(e)
