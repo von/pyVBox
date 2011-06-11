@@ -10,6 +10,7 @@ class Progress(Wrapper):
         "canceled",
         "completed",
         "description",
+        "errorInfo",
         "id",
         "initiator",
         "operation",
