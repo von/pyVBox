@@ -15,7 +15,8 @@ class pyVBoxTest(unittest.TestCase):
     # These are version controlled, we will make a copy before
     # altering them.
     testHDsrc = "test/appliances/TestHD.vdi"
-    testVMsrc = "test/appliances/TestVM.xml"
+    testHDUUID = "c92b558e-eba5-43e8-a8b3-984f946db1b2"
+    testVMsrc = "test/appliances/TestVM.vbox"
     testVMname = "TestVM"
 
     # Our testing grounds
