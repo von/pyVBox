@@ -40,7 +40,8 @@ class Progress(Wrapper):
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
-        if (not self.completed) and (timeout == self.WaitIndefinite):
+        if (((not self.completed) and (timeout == self.WaitIndefinite)) or
+            (self.resultCode != 0)):
             # TODO: This is not the right exception to return.
             raise VirtualBoxException.VirtualBoxException(
                 "Task %s did not complete: %s (%d)" % 
