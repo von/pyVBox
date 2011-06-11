@@ -1,6 +1,7 @@
 """Presentation of Medium representing HardDisk"""
 
 from Medium import Medium
+import UUID
 import VirtualBoxException
 from VirtualBoxManager import Constants
 
@@ -29,9 +30,10 @@ class HardDisk(Medium):
 
     @classmethod
     def find(cls, path):
-        """Returns a hard disk that uses the given path to store medium data."""
+        """Returns a hard disk that uses the given path or UUID to store medium data."""
         try:
-            path = cls._canonicalizeMediumPath(path)
+            if not UUID.isUUID(path):
+                path = cls._canonicalizeMediumPath(path)
             medium = cls._getVBox().findMedium(path,
                                                Constants.DeviceType_HardDisk)
         except Exception, e:
