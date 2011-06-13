@@ -615,10 +615,13 @@ class VirtualMachine(Wrapper):
 
     def _findMediumAttachment(self, device):
         """Given a device, find the IMediumAttachment object associated with its attachment on this machine."""
+        assert(device is not None)
         mediumAttachments = self._getMediumAttachments()
         for attachment in mediumAttachments:
-            if attachment.medium.id == device.id:
-                return attachment
+            # medium can be Null for removable devices
+            if attachment.medium is not None:
+                if attachment.medium.id == device.id:
+                    return attachment
         raise VirtualBoxException.VirtualBoxPluggableDeviceManagerError(
             "No attachment for device \"%s\" on VM \"%s\" found" % (device,
                                                                     self))
