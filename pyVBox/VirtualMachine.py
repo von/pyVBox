@@ -373,6 +373,7 @@ class VirtualMachine(Wrapper):
             VirtualBoxException.handle_exception(e)
             raise
         try:
+            session._setMachine(VirtualMachine(session.getIMachine()))
             yield session
         finally:
             session.unlockMachine(wait=True)

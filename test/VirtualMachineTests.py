@@ -33,6 +33,8 @@ class VirtualMachineTests(pyVBoxTest):
         with machine.lock() as session:
             self.assertNotEqual(session, None)
             self.assertTrue(machine.isLocked())
+            m2 = session.getMachine()
+            self.assertNotEqual(m2, None)
         self.assertTrue(machine.isUnlocked())
         machine.unregister()
 
@@ -168,12 +170,15 @@ class VirtualMachineTests(pyVBoxTest):
     def testSetAttr(self):
         """Set setting of VirtualMachine attributes"""
         machine = VirtualMachine.open(self.testVMpath)
+        machine.register()
         with machine.lock() as session:
+            mutableMachine = session.getMachine()
             # Double memory and make sure it persists
             newMemorySize = machine.memorySize * 2
-            machine.memorySize = newMemorySize
+            mutableMachine.memorySize = newMemorySize
             session.saveSettings()
-            self.assertEqual(newMemorySize, machine.memorySize)
+            self.assertEqual(newMemorySize, mutableMachine.memorySize)
+        machine.unregister()
         machine2 = VirtualMachine.open(self.testVMpath)
         self.assertEqual(newMemorySize, machine2.memorySize)
 

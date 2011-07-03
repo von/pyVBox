@@ -29,6 +29,7 @@ class Session(Wrapper):
 
     def __init__(self, isession):
         self._wrappedInstance = isession
+        self._machine = None
 
     @classmethod
     def create(cls):
@@ -50,6 +51,14 @@ class Session(Wrapper):
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
+
+    def _setMachine(self, machine):
+        """Set the machine associated with this session."""
+        self._machine = machine
+
+    def getMachine(self):
+        """Return the mutable machine associated with the session."""
+        return self._machine
 
     def unlockMachine(self, wait=True):
         """Close any open session, unlocking the machine."""
