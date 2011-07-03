@@ -26,7 +26,8 @@ class pyVBoxTest(unittest.TestCase):
     testHDpath = "test/tmp/TestHD.vdi"
     testVMpath = "test/tmp/TestVM.xml"
 
-    # HD clone we will create during testing
+    # Clone we will create during testing
+    cloneVMname = "CloneTestVM"
     cloneHDpath = "test/tmp/CloneHD.vdi"
 
     # Paths for testing failure
@@ -48,19 +49,29 @@ class pyVBoxTest(unittest.TestCase):
         # Do machine first to detach any HDs
         try:
             machine = VirtualMachine.find(self.testVMname)
-            machine.eject()
         except:
             pass
+        else:
+            machine.eject()
         try:
             harddisk = HardDisk.find(self.testHDpath)
-            harddisk.close()
         except:
             pass
+        else:
+            harddisk.close()
+        try:
+            machine = VirtualMachine.find(self.cloneVMname)
+        except Exception as e:
+            pass
+        else:
+            machine.eject()
+            machine.delete()
         try:
             clonedisk = HardDisk.find(self.cloneHDpath)
-            clonedisk.close()
         except:
             pass
+        else:
+            clonedisk.close()
         try:
             os.remove(self.cloneHDpath)
         except:
