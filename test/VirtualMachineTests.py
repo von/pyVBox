@@ -132,6 +132,7 @@ class VirtualMachineTests(pyVBoxTest):
         machine = VirtualMachine.create("CreateTestVM", "Ubuntu",
                                         forceOverwrite=True)
         # Clean up
+        machine.unregister()
         machine.delete()
 
     def testGetStorageControllers(self):
