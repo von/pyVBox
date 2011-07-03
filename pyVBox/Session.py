@@ -8,6 +8,14 @@ from Wrapper import Wrapper
 
 import weakref
 
+STATE_NAME = {
+    Constants.SessionState_Null : "Null",
+    Constants.SessionState_Locked : "Locked",
+    Constants.SessionState_Unlocked : "Unlocked",
+    Constants.SessionState_Spawning : "Spawning",
+    Constants.SessionState_Unlocking : "Unlocking",
+    }
+
 class Session(Wrapper):
     # Properties directly inherited from IMachine
     _passthruProperties = [
