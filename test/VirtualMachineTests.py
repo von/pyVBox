@@ -25,6 +25,15 @@ class VirtualMachineTests(pyVBoxTest):
             pyVBox.VirtualBoxException.VirtualBoxFileNotFoundException,
             VirtualMachine.open, self.bogusVMpath)
 
+    def testLock(self):
+        """Test VirtualMachine.lock()"""
+        machine = VirtualMachine.open(self.testVMpath)
+        self.assertTrue(machine.isUnlocked())
+        with machine.lock() as session:
+            self.assertNotNone(session)
+            self.assertTrue(machine.isLocked)
+        self.assertTrue(machine.isUnlocked)
+
     def testRegister(self):
         """Test VirtualMachine.register() and related functions"""
         machine = VirtualMachine.open(self.testVMpath)
@@ -156,18 +165,19 @@ class VirtualMachineTests(pyVBoxTest):
     def testSetAttr(self):
         """Set setting of VirtualMachine attributes"""
         machine = VirtualMachine.open(self.testVMpath)
-        # Double memory and make sure it persists
-        newMemorySize = machine.memorySize * 2
-        machine.memorySize = newMemorySize
-        machine.saveSettings()
-        self.assertEqual(newMemorySize, machine.memorySize)
+        with machine.lock() as session:
+            # Double memory and make sure it persists
+            newMemorySize = machine.memorySize * 2
+            machine.memorySize = newMemorySize
+            session.saveSettings()
+            self.assertEqual(newMemorySize, machine.memorySize)
         machine2 = VirtualMachine.open(self.testVMpath)
         self.assertEqual(newMemorySize, machine2.memorySize)
 
     def testClone(self):
         """Test VirtualMachine.clone() method"""
         machine = VirtualMachine.open(self.testVMpath)
-        newMachine = machine.clone("CloneTestVM")
+        newMachine = machine.clone(self.cloneVMname)
         self.assertEqual(machine.description, newMachine.description)
         self.assertEqual(machine.CPUCount, newMachine.CPUCount)
         self.assertEqual(machine.memorySize, newMachine.memorySize)

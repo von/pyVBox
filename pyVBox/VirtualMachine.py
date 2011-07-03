@@ -11,6 +11,7 @@ import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
 from Wrapper import Wrapper
 
+from contextlib import contextmanager
 import os
 import os.path
 
@@ -58,11 +59,9 @@ class VirtualMachine(Wrapper):
     def __init__(self, machine, session=None):
         """Return a VirtualMachine wrapper around given IMachine instance"""
         self._wrappedInstance = machine
-        # Our cached open session
-        self._session = None
 
     def __del__(self):
-        self.closeSession()
+        pass
 
     def __str__(self):
         return self.name
@@ -74,37 +73,39 @@ class VirtualMachine(Wrapper):
         """Pause a running VM.
 
         If wait is True, then wait until machine is actually paused before returning."""
-        session = self.getSession()
-        try:
-            session.console.pause()
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
+        with self.lock() as session:
+            try:
+                session.console.pause()
+            except Exception, e:
+                VirtualBoxException.handle_exception(e)
+                raise
+        # XXX Note sure if we need a lock for this or not
         if wait:
             self.waitUntilPaused()
 
     def resume(self):
         """Resume a paused VM."""
-        session = self.getSession()
-        try:
-            session.console.resume()
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
+        with self.lock() as session:
+            try:
+                session.console.resume()
+            except Exception, e:
+                VirtualBoxException.handle_exception(e)
+                raise
 
     def powerOff(self, wait=False):
         """Power off a running VM.
 
         If wait is True, then wait for power down and session closureto complete."""
-        session = self.getSession()
-        try:
-            session.console.powerDown()
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
+        with self.lock() as session:
+            try:
+                session.console.powerDown()
+            except Exception, e:
+                VirtualBoxException.handle_exception(e)
+                raise
+        # XXX Not sure we need a lock for the following
         if wait:
             self.waitUntilDown()
-            self.waitForSessionClose()
+            self.waitUntilUnlocked()
 
     def powerOn(self, type="gui", env=""):
         """Spawns a new process that executes a virtual machine.
@@ -115,9 +116,13 @@ class VirtualMachine(Wrapper):
             raise VirtualBoxException.VirtualBoxInvalidVMStateException(
                 "VM is not registered")
         try:
-            # Remote session must replace any existing session
-            self.closeSession()
-            self._session = Session.openRemote(self, type=type, env=env)
+            iMachine = self.getIMachine()
+            session = Session.create()
+            iprogress = iMachine.launchVMProcess(session.getISession(),
+                                                 type, env)
+            progress = Progress(iprogress)
+            progress.waitForCompletion()
+            session.unlockMachine()
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
@@ -129,13 +134,19 @@ class VirtualMachine(Wrapper):
             return
         if self.isRunning():
             self.powerOff(wait=True)
-        self.detachAllDevices()
-        self.unregister()
+        self.unregister(cleanup_mode=Constants.CleanupMode_DetachAllReturnNone)
 
     def delete(self):
         """Do whatever it takes to delete the VM"""
-        self.eject()
-        os.remove(self.settingsFilePath)
+        try:
+            iMachine = self.getIMachine()
+            iprogress = iMachine.delete(None)
+            progress = Progress(iprogress)
+            progress.waitForCompletion()
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        
 
     #
     # Creation methods
@@ -263,8 +274,6 @@ class VirtualMachine(Wrapper):
     def unregister(self, cleanup_mode=Constants.CleanupMode_UnregisterOnly):
         """Unregisters the machine previously registered using register()."""
         try:
-            # Must close any open session to unregister
-            self.closeSession()
             machine = self.getIMachine()
             machine.unregister(cleanup_mode)
         except Exception, e:
@@ -298,13 +307,14 @@ class VirtualMachine(Wrapper):
 
         Returns Progress instance. If wait is True, does not return until process completes."""
         assert(name is not None)
-        session = self.getSession()
-        try:
-            iprogress = session.console.takeSnapshot(name, description)
-            progress = Progress(iprogress)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
+        with self.lock() as session:
+            try:
+                iprogress = session.console.takeSnapshot(name, description)
+                progress = Progress(iprogress)
+            except Exception, e:
+                VirtualBoxException.handle_exception(e)
+                raise
+        # XXX Not sure if we need a lock for this or not
         if wait:
             progress.waitForCompletion()
         return progress
@@ -314,13 +324,14 @@ class VirtualMachine(Wrapper):
 
         Returns Progress instance. If wait is True, does not return until process completes."""
         assert(snapshot is not None)
-        session = self.getSession()
-        try:
-            iprogress = session.console.deleteSnapshot(snapshot.id)
-            progress = Progress(iprogress)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
+        with self.lock() as session:
+            try:
+                iprogress = session.console.deleteSnapshot(snapshot.id)
+                progress = Progress(iprogress)
+            except Exception, e:
+                VirtualBoxException.handle_exception(e)
+                raise
+        # XXX Not sure if we need a lock for this or not
         if wait:
             progress.waitForCompletion()
         return progress
@@ -344,46 +355,37 @@ class VirtualMachine(Wrapper):
         return osType
 
     #
-    # Session management
+    # Locking and unlocking
     #
 
-    def getSession(self):
-        """Return a session to the VM."""
-        if (not self._session) or (self.isSessionClosed()):
-            self._session = Session.open(self)
-        return self._session
+    @contextmanager
+    def lock(self, type=Constants.LockType_Shared):
+        """Conextmaager yielding a session to a locked machine."""
+        session = Session.create()
+        try:
+            self.getIMachine().lockMachine(session.getISession(), type)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        yield session
+        session.unlockMachine(wait=True)
 
-    def closeSession(self):
-        """Close any open session to the VM."""
-        if not self._session:
-            return
-        isDirect = self._session.isDirect()
-        self._session.close()
-        self._session = None
-        if isDirect:
-            # For Direct sessions, wait for Machine to show session in
-            # closed state or we risk race condition with subsequent
-            # command if it requires no session to be open.  For
-            # Remote sessions, session won't close since it will
-            # remain open, so don't wait.
-            self.waitForSessionClose()
-
-    def hasSession(self):
+    def isLocked(self):
         """Does the machine have an open session?"""
         state = self.sessionState
         return ((state == Constants.SessionState_Locked) or
                 (state == Constants.SessionState_Spawning) or
                 (state == Constants.SessionState_Unlocking))
 
-    def isSessionClosed(self):
+    def isUnlocked(self):
         """Does the VM not have an open session."""
         state = self.sessionState
         return ((state == Constants.SessionState_Null) or
                 (state == Constants.SessionState_Unlocked))
 
-    def waitForSessionClose(self):
-        """Wait for session to close."""
-        while not self.isSessionClosed():
+    def waitUntilUnlocked(self):
+        """Wait until VM is unlocked"""
+        while not self.isUnlocked():
             self.waitForEvent()
 
     #
@@ -392,64 +394,65 @@ class VirtualMachine(Wrapper):
 
     def attachDevice(self, medium):
         """Attachs a device. Requires an open session."""
-        session = self.getSession()
-        try:
-            # XXX following code needs to be smarter and find appropriate
-            # attachment point
-            storageControllers = self._getStorageControllers()
-            storageController = storageControllers[0]
-            controllerPort = 0
-            device = 0
-            deviceType = Constants.DeviceType_HardDisk
-            session.getIMachine().attachDevice(storageController.name,
-                                               controllerPort,
-                                               device,
-                                               deviceType,
-                                               medium.getIMedium())
-            self.saveSettings()
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
+        with self.lock() as session:
+            try:
+                # XXX following code needs to be smarter and find appropriate
+                # attachment point
+                storageControllers = self._getStorageControllers()
+                storageController = storageControllers[0]
+                controllerPort = 0
+                device = 0
+                deviceType = Constants.DeviceType_HardDisk
+                session.getIMachine().attachDevice(storageController.name,
+                                                   controllerPort,
+                                                   device,
+                                                   deviceType,
+                                                   medium.getIMedium())
+                session.saveSettings()
+            except Exception, e:
+                VirtualBoxException.handle_exception(e)
+                raise
 
     def detachDevice(self, device):
         """Detach the device from the machine."""
-        session = self.getSession()
-        try:
-            attachment = self._findMediumAttachment(device)
-            session.getIMachine().detachDevice(attachment.controller,
-                                               attachment.port,
-                                               attachment.device)
-            self.saveSettings()
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
-
-    def detachAllDevices(self):
-        """Detach all devices from the machine."""
-        session = self.getSession()
-        try:
-            attachments = self._getMediumAttachments()
-            for attachment in attachments:
+        with self.lock() as session:
+            try:
+                attachment = self._findMediumAttachment(device)
                 session.getIMachine().detachDevice(attachment.controller,
                                                    attachment.port,
                                                    attachment.device)
-            self.saveSettings()
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
+                session.saveSettings()
+            except Exception, e:
+                VirtualBoxException.handle_exception(e)
+                raise
+
+    def detachAllDevices(self):
+        """Detach all devices from the machine."""
+        with self.lock() as session:
+            try:
+                attachments = self._getMediumAttachments()
+                for attachment in attachments:
+                    session.getIMachine().detachDevice(attachment.controller,
+                                                       attachment.port,
+                                                       attachment.device)
+                    session.saveSettings()
+            except Exception, e:
+                VirtualBoxException.handle_exception(e)
+                raise
 
     def getAttachedDevices(self):
         """Return array of attached Medium instances."""
-        session = self.getSession()
-        mediums = []
-        try:
-            attachments = self._getMediumAttachments()
-            attachments = filter(lambda a: a.medium is not None, attachments)
-            mediums = [IMediumToMedium(a.medium) for a in attachments]
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
-        return mediums
+        with self.lock() as session:
+            mediums = []
+            try:
+                attachments = self._getMediumAttachments()
+                attachments = filter(lambda a: a.medium is not None,
+                                     attachments)
+                mediums = [IMediumToMedium(a.medium) for a in attachments]
+            except Exception, e:
+                VirtualBoxException.handle_exception(e)
+                raise
+            return mediums
 
     def getHardDrives(self):
         """Return array of attached HardDrive instances."""
@@ -520,7 +523,7 @@ class VirtualMachine(Wrapper):
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
-        self.saveSettings()
+        session.saveSettings()
         return StorageController(controller)
         
     def _getNewStorageControllerName(self, type):
@@ -550,11 +553,7 @@ class VirtualMachine(Wrapper):
     def saveSettings(self):
         """Saves any changes to machine settings made since the session has been opened or a new machine has been created, or since the last call to saveSettings or discardSettings."""
         try:
-            if self._session:
-                # Use mutable machine associated with session.
-                self._session.getIMachine().saveSettings()
-            else:
-                self.getIMachine().saveSettings()
+            self.getIMachine().saveSettings()
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
