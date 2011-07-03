@@ -137,7 +137,9 @@ class VirtualMachine(Wrapper):
         self.unregister(cleanup_mode=Constants.CleanupMode_DetachAllReturnNone)
 
     def delete(self):
-        """Do whatever it takes to delete the VM"""
+        """Delete the VM.
+
+        VM must be locked or unregistered"""
         try:
             iMachine = self.getIMachine()
             iprogress = iMachine.delete(None)
