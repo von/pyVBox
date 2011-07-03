@@ -361,15 +361,19 @@ class VirtualMachine(Wrapper):
 
     @contextmanager
     def lock(self, type=Constants.LockType_Shared):
-        """Conextmaager yielding a session to a locked machine."""
+        """Contextmanager yielding a session to a locked machine.
+
+        Machine must be registered."""
         session = Session.create()
         try:
             self.getIMachine().lockMachine(session.getISession(), type)
         except Exception, e:
             VirtualBoxException.handle_exception(e)
             raise
-        yield session
-        session.unlockMachine(wait=True)
+        try:
+            yield session
+        finally:
+            session.unlockMachine(wait=True)
 
     def isLocked(self):
         """Does the machine have an open session?"""
