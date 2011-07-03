@@ -271,7 +271,8 @@ class VirtualMachine(Wrapper):
             VirtualBoxException.handle_exception(e)
             raise
 
-    def unregister(self, cleanup_mode=Constants.CleanupMode_UnregisterOnly):
+    def unregister(self,
+                   cleanup_mode=Constants.CleanupMode_DetachAllReturnNone):
         """Unregisters the machine previously registered using register()."""
         try:
             machine = self.getIMachine()
