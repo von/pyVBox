@@ -28,11 +28,13 @@ class VirtualMachineTests(pyVBoxTest):
     def testLock(self):
         """Test VirtualMachine.lock()"""
         machine = VirtualMachine.open(self.testVMpath)
+        machine.register()
         self.assertTrue(machine.isUnlocked())
         with machine.lock() as session:
-            self.assertNotNone(session)
-            self.assertTrue(machine.isLocked)
-        self.assertTrue(machine.isUnlocked)
+            self.assertNotEqual(session, None)
+            self.assertTrue(machine.isLocked())
+        self.assertTrue(machine.isUnlocked())
+        machine.unregister()
 
     def testRegister(self):
         """Test VirtualMachine.register() and related functions"""
