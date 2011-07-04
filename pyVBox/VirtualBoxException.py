@@ -51,6 +51,9 @@ VBOX_E_ERROR_ABORT = 0x80004004
 # Returned when VirtualMachine.open() method doesn't find a file
 VBOX_E_FILE_NOT_FOUND = 0x80004005
 
+# Thrown if a create VirtualMachine is invalid in some way 
+XPCOM_E_OBJECT_NOT_READY = 0x80070005
+
 # Returned if VirtualMachine.memorySize is set out of range
 XPCOM_E_INVALID_ARGUMENT = 0x80070057
 
@@ -115,6 +118,10 @@ class VirtualBoxFileNotFoundException(VirtualBoxException):
     """File not found."""
     errno = VBOX_E_FILE_NOT_FOUND
 
+class VirtualBoxObjectNotReady(VirtualBoxException):
+    """Object not read."""
+    errno = XPCOM_E_OBJECT_NOT_READY
+
 class VirtualBoxInvalidArgument(VirtualBoxException):
     """Invalid argument."""
     errno = XPCOM_E_INVALID_ARGUMENT
@@ -139,6 +146,7 @@ EXCEPTION_MAPPINGS = {
     VBOX_E_OBJECT_IN_USE         : VirtualBoxObjectInUseException,
     VBOX_E_ERROR_ABORT           : VirtualBoxOperationAborted,
     VBOX_E_FILE_NOT_FOUND        : VirtualBoxFileNotFoundException,
+    XPCOM_E_OBJECT_NOT_READY     : VirtualBoxObjectNotReady,
     XPCOM_E_INVALID_ARGUMENT     : VirtualBoxInvalidArgument,
     VBOX_E_SESSION_CLOSED        : VirtualBoxInvalidVMStateException,
     }
