@@ -59,7 +59,7 @@ def show_progress(progress, prefix="Progess: "):
             print "Interrupted."
         else:
             # Print one last time with carriage return
-            print "%s%2d%%" % (prefix, progress.percent),
+            print "%s%2d%%" % (prefix, progress.percent)
     else:
         progress.waitForCompletion()
 
