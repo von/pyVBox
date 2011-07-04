@@ -51,3 +51,5 @@ class MediumTests(pyVBoxTest):
         self.assertEqual(harddisk.logicalSize, harddisk.logicalSize)
         self.assertNotEqual(harddisk.id, clonedisk.id)
 
+if __name__ == '__main__':
+    main()

@@ -12,3 +12,6 @@ class SessionTests(pyVBoxTest):
         """Test Session.create() method"""
         s = Session.create()
         self.assertNotEqual(s, None)
+
+if __name__ == '__main__':
+    main()

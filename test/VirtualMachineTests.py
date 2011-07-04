@@ -205,3 +205,7 @@ class VirtualMachineTests(pyVBoxTest):
         # Clean up
         newMachine.unregister()
         newMachine.delete()
+
+if __name__ == '__main__':
+    main()
+
