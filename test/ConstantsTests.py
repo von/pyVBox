@@ -2,8 +2,8 @@
 """Unittests for VirtualManager.Constants"""
 
 from pyVBoxTest import pyVBoxTest, main
-from pyVBox.VirtualBoxManager import Constants
-from pyVBox.VirtualBoxException import VirtualBoxException
+from pyVBox import Constants
+from pyVBox import VirtualBoxException
 
 class ConstantsTests(pyVBoxTest):
     """Test case for Constants"""

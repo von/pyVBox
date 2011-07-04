@@ -2,8 +2,10 @@
 """Unittests for HardDisk"""
 
 from pyVBoxTest import pyVBoxTest, main
-from pyVBox.HardDisk import HardDisk
-import pyVBox.VirtualBoxException
+from pyVBox import HardDisk 
+from pyVBox import VirtualBoxException
+from pyVBox import VirtualBoxFileError
+from pyVBox import VirtualBoxObjectNotFoundException
 
 import os.path
 
@@ -20,13 +22,13 @@ class HardDiskTests(pyVBoxTest):
     def testOpenNotFound(self):
         """Test HardDisk.open() with not found file"""
         self.assertRaises(
-            pyVBox.VirtualBoxException.VirtualBoxFileError,
+            VirtualBoxFileError,
             HardDisk.open, self.bogusHDpath)
 
     def testFind(self):
         """Test HardDisk.find()"""
         self.assertRaises(
-            pyVBox.VirtualBoxException.VirtualBoxObjectNotFoundException,
+            VirtualBoxObjectNotFoundException,
             HardDisk.find, self.bogusHDpath)
         self.assertEqual(False, HardDisk.isRegistered(self.testHDpath))
         harddisk = HardDisk.open(self.testHDpath)

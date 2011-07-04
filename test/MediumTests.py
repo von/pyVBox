@@ -2,10 +2,11 @@
 """Unittests for Medium"""
 
 from pyVBoxTest import pyVBoxTest, main
-from pyVBox.HardDisk import HardDisk
-from pyVBox.Medium import Medium
-from pyVBox.VirtualBoxException import VirtualBoxException
-from pyVBox.VirtualBoxManager import Constants
+from pyVBox import Constants
+from pyVBox import HardDisk
+from pyVBox import Medium
+from pyVBox import VirtualBoxException
+
 
 import os.path
 

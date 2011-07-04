@@ -5,9 +5,9 @@ import os.path
 import shutil
 import unittest
 
-from pyVBox.HardDisk import HardDisk
-from pyVBox.VirtualBox import VirtualBox
-from pyVBox.VirtualMachine import VirtualMachine
+from pyVBox import HardDisk
+from pyVBox import VirtualBox
+from pyVBox import VirtualMachine
 
 class pyVBoxTest(unittest.TestCase):
     """Base class for all pyVBox unittests."""

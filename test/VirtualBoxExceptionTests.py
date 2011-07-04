@@ -2,8 +2,8 @@
 """Unittests for Virtualbox"""
 
 from pyVBoxTest import pyVBoxTest, main
-from pyVBox.VirtualBoxException import ExceptionHandler, VirtualBoxException
-from pyVBox.VirtualMachine import VirtualMachine
+from pyVBox import ExceptionHandler, VirtualBoxException
+from pyVBox import VirtualMachine
 
 class VirtualBoxExceptionTests(pyVBoxTest):
     """Test case for VirtualBoxException"""

@@ -2,10 +2,12 @@
 """Unittests for VirtualMachine"""
 
 from pyVBoxTest import pyVBoxTest, main
-from pyVBox.HardDisk import HardDisk
-import pyVBox.VirtualBoxException
-from pyVBox.VirtualBoxManager import Constants
-from pyVBox.VirtualMachine import VirtualMachine
+from pyVBox import Constants
+from pyVBox import HardDisk
+from pyVBox import VirtualBoxException
+from pyVBox import VirtualBoxFileNotFoundException
+from pyVBox import VirtualBoxObjectNotFoundException
+from pyVBox import VirtualMachine
 
 from time import sleep
 
@@ -22,7 +24,7 @@ class VirtualMachineTests(pyVBoxTest):
     def testOpenNotFound(self):
         """Test VirtualMachine.open() with not found file"""
         self.assertRaises(
-            pyVBox.VirtualBoxException.VirtualBoxFileNotFoundException,
+            VirtualBoxFileNotFoundException,
             VirtualMachine.open, self.bogusVMpath)
 
     def testLock(self):
@@ -105,7 +107,7 @@ class VirtualMachineTests(pyVBoxTest):
         machine = VirtualMachine.open(self.testVMpath)
         # Should fail since not registered yet
         self.assertRaises(
-            pyVBox.VirtualBoxException.VirtualBoxObjectNotFoundException,
+            VirtualBoxObjectNotFoundException,
             VirtualMachine.get, machine.id)
         machine.register()
         m2 = VirtualMachine.get(machine.id)

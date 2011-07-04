@@ -2,7 +2,7 @@
 """Unittests for VirtualboxManager"""
 
 from pyVBoxTest import pyVBoxTest, main
-from pyVBox.VirtualBoxManager import VirtualBoxManager
+from pyVBox import VirtualBoxManager
 
 class VirtualBoxManagerTests(pyVBoxTest):
     """Test case for VirtualBoxManager"""

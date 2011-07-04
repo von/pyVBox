@@ -2,8 +2,8 @@
 """Unittests for Session class"""
 
 from pyVBoxTest import pyVBoxTest, main
-from pyVBox.Session import Session
-from pyVBox.VirtualMachine import VirtualMachine
+from pyVBox import Session
+from pyVBox import VirtualMachine
 
 class SessionTests(pyVBoxTest):
     """Tests for Session class"""
