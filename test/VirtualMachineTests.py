@@ -186,6 +186,7 @@ class VirtualMachineTests(pyVBoxTest):
         """Test VirtualMachine.clone() method"""
         machine = VirtualMachine.open(self.testVMpath)
         newMachine = machine.clone(self.cloneVMname)
+        self.assertEqual(self.cloneVMname, newMachine.name)
         self.assertEqual(machine.description, newMachine.description)
         self.assertEqual(machine.CPUCount, newMachine.CPUCount)
         self.assertEqual(machine.memorySize, newMachine.memorySize)
