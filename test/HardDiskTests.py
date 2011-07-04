@@ -35,3 +35,6 @@ class HardDiskTests(pyVBoxTest):
         self.assertEqual(harddisk.id, hd.id)
         harddisk.close()
         self.assertEqual(False, HardDisk.isRegistered(self.testHDpath))
+
+if __name__ == '__main__':
+    main()
