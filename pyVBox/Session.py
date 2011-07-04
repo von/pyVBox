@@ -46,11 +46,8 @@ class Session(Wrapper):
 
     def saveSettings(self):
         """Save changes to VM associated with session."""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             self.getIMachine().saveSettings()
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
 
     def _setMachine(self, machine):
         """Set the machine associated with this session."""
@@ -63,14 +60,11 @@ class Session(Wrapper):
     def unlockMachine(self, wait=True):
         """Close any open session, unlocking the machine."""
         if self.isLocked():
-            try:
+            with VirtualBoxException.ExceptionHandler():
                 self._wrappedInstance.unlockMachine()
                 if wait:
                     while self.isLocked():
                         self._vbox.waitForEvent()
-            except Exception, ex:
-                VirtualBoxException.handle_exception(ex)
-                raise
 
     def getISession(self):
         """Return ISession instance wrapped by Session"""

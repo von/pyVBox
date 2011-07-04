@@ -51,7 +51,7 @@ class Medium(Wrapper):
         If wait is True, does not return until process completes.
         if newUUID is true, clone will have new UUID and will be registered, otherwise will have same UUID as source medium.
         Returns Progress instance."""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             path = self._canonicalizeMediumPath(path)
             if newUUID:
                 # If target doesn't have storage, new UUID is created.
@@ -60,9 +60,6 @@ class Medium(Wrapper):
                 # If target does have storage, UUID is copied.
                 target = self.createWithStorage(path, self.logicalSize)
             progress = self.cloneTo(target, wait=wait)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         if wait:
             progress.waitForCompletion()
         return progress
@@ -70,22 +67,16 @@ class Medium(Wrapper):
     @classmethod
     def create(cls, path, format=None):
         """Create a new hard disk at the given location."""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             path = cls._canonicalizeMediumPath(path)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         if os.path.exists(path):
             # Todo: Better exception here
             raise VirtualBoxException.VirtualBoxException(
                 "Cannot create %s - file already exists." % path)
-        try:
+        with VirtualBoxException.ExceptionHandler():
             # Despire the name of this method it returns an IMedium
             # instance
             imedium = cls._getVBox().createHardDisk(format, path)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         return cls(imedium)
     
     @classmethod
@@ -167,13 +158,10 @@ class Medium(Wrapper):
         Returns Progress instance. If wait is True, does not return until process completes."""
         if variant is None:
             variant = Constants.MediumVariant_Standard
-        try:
+        with VirtualBoxException.ExceptionHandler():
             progress = self.getIMedium().cloneTo(target.getIMedium(),
                                                  variant,
                                                  parent)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         progress = Progress(progress)
         if wait:
             progress.waitForCompletion()
@@ -185,11 +173,8 @@ class Medium(Wrapper):
         Returns Progress instance. If wait is True, does not return until process completes."""
         if variant is None:
             variant = Constants.MediumVariant_Standard
-        try:
+        with VirtualBoxException.ExceptionHandler():
             progress = self.getIMedium().createBaseStorage(size, variant)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         progress = Progress(progress)
         if wait:
             progress.waitForCompletion()

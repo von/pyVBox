@@ -7,12 +7,9 @@ class VirtualBoxManager(vboxapi.VirtualBoxManager):
 
     def __init__(self, style=None, params=None):
         self.__call_deinit = False
-        try:
+        with VirtualBoxException.ExceptionHandler():
             vboxapi.VirtualBoxManager.__init__(self, style, params)
             self.__call_deinit = True
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
 
     def __del__(self):
         if self.__call_deinit:
@@ -26,11 +23,8 @@ class VirtualBoxManager(vboxapi.VirtualBoxManager):
         if timeout is None:
             # No timeout
             timeout = 0
-        try:
+        with VirtualBoxException.ExceptionHandler():
             vboxapi.VirtualBoxManager.waitForEvents(self, timeout)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
 
 
     def getIVirtualBox(self):

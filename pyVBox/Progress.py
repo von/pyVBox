@@ -35,11 +35,8 @@ class Progress(Wrapper):
         Timeout is in milliseconds, specify None for an indefinite wait."""
         if timeout is None:
             timeout = self.WaitIndefinite
-        try:
+        with VirtualBoxException.ExceptionHandler():
             self._wrappedInstance.waitForCompletion(timeout)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         if (((not self.completed) and (timeout == self.WaitIndefinite)) or
             (self.completed and (self.resultCode != 0))):
             # TODO: This is not the right exception to return.

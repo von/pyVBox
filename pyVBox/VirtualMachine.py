@@ -74,11 +74,8 @@ class VirtualMachine(Wrapper):
 
         If wait is True, then wait until machine is actually paused before returning."""
         with self.lock() as session:
-            try:
+            with VirtualBoxException.ExceptionHandler():
                 session.console.pause()
-            except Exception, e:
-                VirtualBoxException.handle_exception(e)
-                raise
         # XXX Note sure if we need a lock for this or not
         if wait:
             self.waitUntilPaused()
@@ -86,22 +83,16 @@ class VirtualMachine(Wrapper):
     def resume(self):
         """Resume a paused VM."""
         with self.lock() as session:
-            try:
+            with VirtualBoxException.ExceptionHandler():
                 session.console.resume()
-            except Exception, e:
-                VirtualBoxException.handle_exception(e)
-                raise
 
     def powerOff(self, wait=False):
         """Power off a running VM.
 
         If wait is True, then wait for power down and session closureto complete."""
         with self.lock() as session:
-            try:
+            with VirtualBoxException.ExceptionHandler():
                 session.console.powerDown()
-            except Exception, e:
-                VirtualBoxException.handle_exception(e)
-                raise
         # XXX Not sure we need a lock for the following
         if wait:
             self.waitUntilDown()
@@ -115,7 +106,7 @@ class VirtualMachine(Wrapper):
         if not self.isRegistered():
             raise VirtualBoxException.VirtualBoxInvalidVMStateException(
                 "VM is not registered")
-        try:
+        with VirtualBoxException.ExceptionHandler():
             iMachine = self.getIMachine()
             session = Session.create()
             iprogress = iMachine.launchVMProcess(session.getISession(),
@@ -123,9 +114,6 @@ class VirtualMachine(Wrapper):
             progress = Progress(iprogress)
             progress.waitForCompletion()
             session.unlockMachine()
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
 
     def eject(self):
         """Do what ever it takes to unregister the VM"""
@@ -140,15 +128,11 @@ class VirtualMachine(Wrapper):
         """Delete the VM.
 
         VM must be locked or unregistered"""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             iMachine = self.getIMachine()
             iprogress = iMachine.delete(None)
             progress = Progress(iprogress)
             progress.waitForCompletion()
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
-        
 
     #
     # Creation methods
@@ -162,22 +146,16 @@ class VirtualMachine(Wrapper):
         throw a VirtualBoxFileNotFoundException except.
 
         Throws VirtualBoxFileNotFoundException if file not found."""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             path = cls._canonicalizeVMPath(path)
             machine = cls._vbox.openMachine(path)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         return VirtualMachine(machine)
 
     @classmethod
     def find(cls, nameOrId):
         """Attempts to find a virtual machine given its name or UUID."""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             machine = cls._vbox.findMachine(nameOrId)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         return VirtualMachine(machine)
 
     @classmethod
@@ -197,15 +175,12 @@ class VirtualMachine(Wrapper):
         machine. Otherwise one will be automatically generated.
 
         If register is True, register machine after creation."""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             machine = cls._vbox.createMachine(settingsFile,
                                               name,
                                               osTypeId,
                                               id,
                                               forceOverwrite)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         vm = VirtualMachine(machine)
         vm.saveSettings()
         if register:
@@ -267,21 +242,15 @@ class VirtualMachine(Wrapper):
 
     def register(self):
         """Registers the machine within this VirtualBox installation."""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             self._vbox.registerMachine(self.getIMachine())
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
 
     def unregister(self,
                    cleanup_mode=Constants.CleanupMode_DetachAllReturnNone):
         """Unregisters the machine previously registered using register()."""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             machine = self.getIMachine()
             machine.unregister(cleanup_mode)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
 
     def isRegistered(self):
         """Is this virtual machine registered?"""
@@ -311,12 +280,9 @@ class VirtualMachine(Wrapper):
         Returns Progress instance. If wait is True, does not return until process completes."""
         assert(name is not None)
         with self.lock() as session:
-            try:
+            with VirtualBoxException.ExceptionHandler():
                 iprogress = session.console.takeSnapshot(name, description)
                 progress = Progress(iprogress)
-            except Exception, e:
-                VirtualBoxException.handle_exception(e)
-                raise
         # XXX Not sure if we need a lock for this or not
         if wait:
             progress.waitForCompletion()
@@ -328,12 +294,9 @@ class VirtualMachine(Wrapper):
         Returns Progress instance. If wait is True, does not return until process completes."""
         assert(snapshot is not None)
         with self.lock() as session:
-            try:
+            with VirtualBoxException.ExceptionHandler():
                 iprogress = session.console.deleteSnapshot(snapshot.id)
                 progress = Progress(iprogress)
-            except Exception, e:
-                VirtualBoxException.handle_exception(e)
-                raise
         # XXX Not sure if we need a lock for this or not
         if wait:
             progress.waitForCompletion()
@@ -349,12 +312,9 @@ class VirtualMachine(Wrapper):
 
     def getOSType(self):
         """Returns an object describing the specified guest OS type."""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             imachine = self.getIMachine()
             osType = self._vbox.getGuestOSType(imachine.OSTypeId)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         return osType
 
     #
@@ -367,11 +327,8 @@ class VirtualMachine(Wrapper):
 
         Machine must be registered."""
         session = Session.create()
-        try:
+        with VirtualBoxException.ExceptionHandler():
             self.getIMachine().lockMachine(session.getISession(), type)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         try:
             session._setMachine(VirtualMachine(session.getIMachine()))
             yield session
@@ -403,7 +360,7 @@ class VirtualMachine(Wrapper):
     def attachDevice(self, medium):
         """Attachs a device. Requires an open session."""
         with self.lock() as session:
-            try:
+            with VirtualBoxException.ExceptionHandler():
                 # XXX following code needs to be smarter and find appropriate
                 # attachment point
                 storageControllers = self._getStorageControllers()
@@ -417,49 +374,37 @@ class VirtualMachine(Wrapper):
                                                    deviceType,
                                                    medium.getIMedium())
                 session.saveSettings()
-            except Exception, e:
-                VirtualBoxException.handle_exception(e)
-                raise
 
     def detachDevice(self, device):
         """Detach the device from the machine."""
         with self.lock() as session:
-            try:
+            with VirtualBoxException.ExceptionHandler():
                 attachment = self._findMediumAttachment(device)
                 session.getIMachine().detachDevice(attachment.controller,
                                                    attachment.port,
                                                    attachment.device)
                 session.saveSettings()
-            except Exception, e:
-                VirtualBoxException.handle_exception(e)
-                raise
 
     def detachAllDevices(self):
         """Detach all devices from the machine."""
         with self.lock() as session:
-            try:
+            with VirtualBoxException.ExceptionHandler():
                 attachments = self._getMediumAttachments()
                 for attachment in attachments:
                     session.getIMachine().detachDevice(attachment.controller,
                                                        attachment.port,
                                                        attachment.device)
                     session.saveSettings()
-            except Exception, e:
-                VirtualBoxException.handle_exception(e)
-                raise
 
     def getAttachedDevices(self):
         """Return array of attached Medium instances."""
         with self.lock() as session:
             mediums = []
-            try:
+            with VirtualBoxException.ExceptionHandler():
                 attachments = self._getMediumAttachments()
                 attachments = filter(lambda a: a.medium is not None,
                                      attachments)
                 mediums = [IMediumToMedium(a.medium) for a in attachments]
-            except Exception, e:
-                VirtualBoxException.handle_exception(e)
-                raise
             return mediums
 
     def getHardDrives(self):
@@ -476,31 +421,22 @@ class VirtualMachine(Wrapper):
 
     def getStorageControllerByName(self, name):
         """Return the StorageController with the given name"""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             controller = self.getIMachine().getStorageControllerByName(name)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         return StorageController(controller)
 
     def getStorageControllerByInstance(self, instance):
         """Return the StorageController with the given instance number"""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             controller = self.getIMachine().getStorageControllerByInstance(instance)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
         return StorageController(controller)
 
     def removeStorageController(self, name):
         """Removes a storage controller from the machine.
 
         Currently I'm getting a Operation aborted error invoking this method"""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             self.getIMachine().removeStorageController(name)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
 
     def doesStorageControllerExist(self, name):
         """Return boolean indicating if StorageController with given name exists"""
@@ -527,12 +463,9 @@ class VirtualMachine(Wrapper):
         if name is None:
             name = self._getNewStorageControllerName(type)
         with self.lock() as session:
-            try:
+            with VirtualBoxException.ExceptionHandler():
                 mutableMachine = session.getMachine()
                 controller = mutableMachine.getIMachine().addStorageController(name, type)
-            except Exception, e:
-                VirtualBoxException.handle_exception(e)
-                raise
             session.saveSettings()
         return StorageController(controller)
         
@@ -562,11 +495,8 @@ class VirtualMachine(Wrapper):
 
     def saveSettings(self):
         """Saves any changes to machine settings made since the session has been opened or a new machine has been created, or since the last call to saveSettings or discardSettings."""
-        try:
+        with VirtualBoxException.ExceptionHandler():
             self.getIMachine().saveSettings()
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
 
     #
     # Monitoring methods

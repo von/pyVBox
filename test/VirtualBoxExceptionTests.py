@@ -2,7 +2,8 @@
 """Unittests for Virtualbox"""
 
 from pyVBoxTest import pyVBoxTest, main
-from pyVBox.VirtualBoxException import VirtualBoxException
+from pyVBox.VirtualBoxException import ExceptionHandler, VirtualBoxException
+from pyVBox.VirtualMachine import VirtualMachine
 
 class VirtualBoxExceptionTests(pyVBoxTest):
     """Test case for VirtualBoxException"""
@@ -15,6 +16,16 @@ class VirtualBoxExceptionTests(pyVBoxTest):
     @staticmethod
     def raiseVirtualBoxException():
         raise VirtualBoxException("Testing")
+
+    def testExceptionHandler(self):
+        """Test VirtualBoxException.ExceptionHandler"""
+        self.assertRaises(VirtualBoxException, self.causeVirtualBoxException)
+
+    @classmethod
+    def causeVirtualBoxException(cls):
+        """Should translate VirtualBox exception into a VirtualBoxException"""
+        with ExceptionHandler():
+            VirtualMachine.open(cls.bogusVMpath)
 
 if __name__ == '__main__':
     main()

@@ -1,5 +1,8 @@
 """Basic exceptions for pyVBox."""
 
+import xpcom
+
+from contextlib import contextmanager
 import sys
 
 ######################################################################
@@ -151,39 +154,43 @@ EXCEPTION_MAPPINGS = {
     VBOX_E_SESSION_CLOSED        : VirtualBoxInvalidVMStateException,
     }
 
-def handle_exception(ex):
-    """Handle an exception from virtualbox code.
+
+class ExceptionHandler:
+    """Context manager to handle any VirtualBox exceptions.
 
 Since the VirtualBox Python API raises normal exceptions, this
 function determines if an exception is related to VirtualBox and, if
 so, raises its pyVBox equivalent.
 
-Otherwise, it returns without doing anything. The intention being the
-caller can raise the original exception. This allows python to know
-the catch block ends with a raise and is not a valid flow of control
-to the code past the try/catch block, which can lead to errors about
-values being used before they are set.
+Otherwise, it does nothing.
 
 The function should be used as follows:
 
-    try:
+    with vbox_exception_handler():
         # Some VirtualBox code here
-    catch Exception, e:
-        VirtualBoxException.handle_exception(e)
-        raise
 """
-    if hasattr(ex, 'errno'):
-        # Convert errno from exception to constant value from IDL file.
-        # I don't understand why this is needed, determined experimentally.
-        # ex.errno is a negative value (e.g. -0x7f44ffff), this effectively
-        # takes its aboslute value and subtracts it from 0x100000000.
-        errno = 0x100000000 + ex.errno
-        if EXCEPTION_MAPPINGS.has_key(errno):
-            # Reraise with original stacktrace and instance
-            # information, but with new class.
-            cls = EXCEPTION_MAPPINGS[errno]
-            exc_info = sys.exc_info()
-            raise cls, ex.msg, exc_info[2]
-    # Else we don't have or don't recognize the errno, return and allow
-    # original code to re-raise exception.
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            if issubclass(exc_type, xpcom.Exception):  # Also True if equal
+                errno, message = exc_val
+                # Convert errno from exception to constant value from
+                # IDL file.  I don't understand why this is needed,
+                # determined experimentally.  ex.errno is a negative
+                # value (e.g. -0x7f44ffff), this effectively takes its
+                # aboslute value and subtracts it from 0x100000000.
+                errno = 0x100000000 + errno
+                if EXCEPTION_MAPPINGS.has_key(errno):
+                    # Reraise with original stacktrace and instance
+                    # information, but with new class.
+                    cls = EXCEPTION_MAPPINGS[errno]
+                    # Note that one cannot hide the current line from the
+                    # traceback. See http://stackoverflow.com/questions/6410764/raising-exceptions-without-raise-in-the-traceback
+                    raise cls, message
+            # Else we don't have or don't recognize the errno, return
+            # and allow context manager to re-raise exception.
+        return False
 
