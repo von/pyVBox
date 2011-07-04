@@ -248,12 +248,12 @@ class VirtualMachine(Wrapper):
         vm.accelerate2DVideoEnabled = self.accelerate2DVideoEnabled
         vm.monitorCount = self.monitorCount
         controllers = self.getStorageControllers()
+        vm.register()
         for controller in controllers:
             vm.addStorageController(controller.bus,
                                     name = controller.name)
-        vm.saveSettings()
-        if register:
-            vm.register()
+        if not register:
+            clone.unregister()
         return vm
 
     @classmethod
@@ -526,12 +526,14 @@ class VirtualMachine(Wrapper):
         """
         if name is None:
             name = self._getNewStorageControllerName(type)
-        try:
-            controller = self.getIMachine().addStorageController(name, type)
-        except Exception, e:
-            VirtualBoxException.handle_exception(e)
-            raise
-        session.saveSettings()
+        with self.lock() as session:
+            try:
+                mutableMachine = session.getMachine()
+                controller = mutableMachine.getIMachine().addStorageController(name, type)
+            except Exception, e:
+                VirtualBoxException.handle_exception(e)
+                raise
+            session.saveSettings()
         return StorageController(controller)
         
     def _getNewStorageControllerName(self, type):

@@ -196,9 +196,11 @@ class VirtualMachineTests(pyVBoxTest):
                          newMachine.accelerate2DVideoEnabled)
         self.assertEqual(machine.monitorCount,
                          newMachine.monitorCount)
-        controllers = machine.getStorageControllers()
-        newControllers = newMachine.getStorageControllers()
-        self.assertEqual(len(controllers), len(newControllers))
+        with newMachine.lock() as session:
+            controllers = machine.getStorageControllers()
+            newControllers = newMachine.getStorageControllers()
+            self.assertEqual(len(controllers), len(newControllers))
         # Todo: compare individual controllers
         # Clean up
+        newMachine.unregister()
         newMachine.delete()
