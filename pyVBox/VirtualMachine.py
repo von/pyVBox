@@ -186,21 +186,21 @@ class VirtualMachine(Wrapper):
         return cls.find(id)
 
     @classmethod
-    def create(cls, name, osTypeId, baseFolder=None, id=None, register=True,
+    def create(cls, name, osTypeId, settingsFile=None, id=None, register=True,
                forceOverwrite=False):
         """Create a new virtual machine with the given name and osType.
     
-        If baseFolder is not None, it should be a path to use instead
-        of the default machine settings folder for storing the VM.
+        If settingsFile is not None, it should be a path to use instead
+        of the default for the settings file.
 
         If id is not None, it will be used as the UUID of the
         machine. Otherwise one will be automatically generated.
 
         If register is True, register machine after creation."""
         try:
-            machine = cls._vbox.createMachine(name,
+            machine = cls._vbox.createMachine(settingsFile,
+                                              name,
                                               osTypeId,
-                                              baseFolder,
                                               id,
                                               forceOverwrite)
         except Exception, e:
@@ -212,15 +212,15 @@ class VirtualMachine(Wrapper):
             vm.register()
         return vm
 
-    def clone(self, name, baseFolder=None, id=None, register=True,
+    def clone(self, name, settingsFile=None, id=None, register=True,
               description=None):
         """Clone this virtual machine as new VM with given name.
 
         Clones basic properties of machine plus any storage
         controllers. Does not clone any attached storage.
 
-        If baseFolder is not None, it should be a path to use instead
-        of the default machine settings folder for storing the new VM.
+        If settingsFile is not None, it should be a path to use instead
+        of the default for the settingsFile
 
         If id is not None, it will be used as the UUID of the
         new machine. Otherwise one will be automatically generated.
@@ -230,7 +230,7 @@ class VirtualMachine(Wrapper):
         If description is None, copy description from source, otherwise use description."""
         vm = VirtualMachine.create(name,
                                    self.OSTypeId,
-                                   baseFolder=baseFolder,
+                                   settingsFile=settingsFile,
                                    id=id,
                                    # Once we register, we cannot make
                                    # changes without opening a
