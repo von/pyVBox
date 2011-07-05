@@ -94,6 +94,8 @@ class VirtualMachineTests(pyVBoxTest):
         machine = VirtualMachine.open(self.testVMpath)
         machine.register()
         self.assertEqual(None, machine.getCurrentSnapshot())
+        # This sleep seems to keep takeSnapshot() from hangin
+        sleep(1)
         machine.takeSnapshot(snapshotName)
         snapshot = machine.getCurrentSnapshot()
         self.assertNotEqual(snapshot, None)
