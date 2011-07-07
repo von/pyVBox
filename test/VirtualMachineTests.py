@@ -118,8 +118,14 @@ class VirtualMachineTests(pyVBoxTest):
         machine.unregister()
 
     def testGetAll(self):
-        """Test getAll() method"""
-        machines = VirtualMachine.getAll()
+        """Test VirtualMachine.getAll()"""
+        # Make sure we have at least one vm
+        machine = VirtualMachine.open(self.testVMpath)
+        machine.register()
+        vms = VirtualMachine.getAll()
+        self.assertTrue(len(vms) > 0)
+        self.assertTrue(isinstance(vms[0], VirtualMachine))
+        machine.unregister()
 
     def testGetOSType(self):
         """Test getOSType() method"""

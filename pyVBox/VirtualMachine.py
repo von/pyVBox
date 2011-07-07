@@ -234,7 +234,7 @@ class VirtualMachine(Wrapper):
     @classmethod
     def getAll(cls):
         """Return an array of all known virtual machines"""
-        return cls._vbox.machines
+        return [VirtualMachine(vm) for vm in cls._vbox.machines]
             
     #
     # Registration methods
