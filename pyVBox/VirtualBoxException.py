@@ -177,19 +177,24 @@ The function should be used as follows:
         if exc_type is not None:
             if issubclass(exc_type, xpcom.Exception):  # Also True if equal
                 errno, message = exc_val
-                # Convert errno from exception to constant value from
-                # IDL file.  I don't understand why this is needed,
-                # determined experimentally.  ex.errno is a negative
-                # value (e.g. -0x7f44ffff), this effectively takes its
-                # aboslute value and subtracts it from 0x100000000.
-                errno = 0x100000000 + errno
+                exception_class = None
                 if EXCEPTION_MAPPINGS.has_key(errno):
+                    exception_class = EXCEPTION_MAPPINGS[errno]
+                else:
+                    # Convert errno from exception to constant value from
+                    # IDL file.  I don't understand why this is needed,
+                    # determined experimentally.  ex.errno is a negative
+                    # value (e.g. -0x7f44ffff), this effectively takes its
+                    # aboslute value and subtracts it from 0x100000000.
+                    errno = 0x100000000 + errno
+                    if EXCEPTION_MAPPINGS.has_key(errno):
+                        exception_class = EXCEPTION_MAPPINGS[errno]
+                if exception_class:
                     # Reraise with original stacktrace and instance
-                    # information, but with new class.
-                    cls = EXCEPTION_MAPPINGS[errno]
-                    # Note that one cannot hide the current line from the
-                    # traceback. See http://stackoverflow.com/questions/6410764/raising-exceptions-without-raise-in-the-traceback
-                    raise cls, message
+                    # information, but with new class.  Note that one
+                    # cannot hide the current line from the traceback. See
+                    # http://stackoverflow.com/questions/6410764/raising-exceptions-without-raise-in-the-traceback
+                    raise exception_class, message
             # Else we don't have or don't recognize the errno, return
             # and allow context manager to re-raise exception.
         return False
