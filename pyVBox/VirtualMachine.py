@@ -2,6 +2,7 @@
 
 from Glue import IMediumToMedium
 from Medium import Medium
+from MediumAttachment import MediumAttachment
 from Progress import Progress
 from Session import Session
 from Snapshot import Snapshot
@@ -412,6 +413,29 @@ class VirtualMachine(Wrapper):
         return filter(lambda d: d.isHardDisk(), self.getAttachedDevices())
 
     #
+    # MediumAttachment methods
+    #
+    def getMediumAttachments(self):
+        """Return array of MediumAttachments"""
+        return [MediumAttachment(ma) for ma in self._getMediumAttachments()]
+
+    def _findMediumAttachment(self, device):
+        """Given a device, find the IMediumAttachment object associated with its attachment on this machine."""
+        assert(device is not None)
+        mediumAttachments = self._getMediumAttachments()
+        for attachment in mediumAttachments:
+            # medium can be Null for removable devices
+            if attachment.medium is not None:
+                if attachment.medium.id == device.id:
+                    return attachment
+        raise VirtualBoxException.VirtualBoxPluggableDeviceManagerError(
+            "No attachment for device \"%s\" on VM \"%s\" found" % (device,
+                                                                    self))
+    def _getMediumAttachments(self):
+        """Return the array of medium attachements on this virtual machine."""
+        return self._getArray('mediumAttachments')
+
+    #
     # StorageController methods
     #
     
@@ -552,18 +576,6 @@ class VirtualMachine(Wrapper):
         # path must be absolute path
         return os.path.abspath(path)
 
-    def _findMediumAttachment(self, device):
-        """Given a device, find the IMediumAttachment object associated with its attachment on this machine."""
-        assert(device is not None)
-        mediumAttachments = self._getMediumAttachments()
-        for attachment in mediumAttachments:
-            # medium can be Null for removable devices
-            if attachment.medium is not None:
-                if attachment.medium.id == device.id:
-                    return attachment
-        raise VirtualBoxException.VirtualBoxPluggableDeviceManagerError(
-            "No attachment for device \"%s\" on VM \"%s\" found" % (device,
-                                                                    self))
 
 
     #
@@ -577,10 +589,6 @@ class VirtualMachine(Wrapper):
     def _getManager(self):
         """Return the IVirtualBoxManager object associated with this VirtualMachine."""
         return self._manager
-
-    def _getMediumAttachments(self):
-        """Return the array of medium attachements on this virtual machine."""
-        return self._getArray('mediumAttachments')
 
     def _getStorageControllers(self):
         """Return the array of storage controllers associated with this virtual machine."""
