@@ -4,6 +4,7 @@
 
 from pyVBox import HardDisk
 from pyVBox import VirtualBox
+from pyVBox import VirtualBoxException
 from pyVBox import VirtualMachine
 
 import atexit
@@ -370,6 +371,24 @@ class HelpCommand(Command):
                 message("%*s: %s" % (longestNameLen, name, cmd.__doc__))
 
 Command.register_command("help", HelpCommand)
+
+class ListCommand(Command):
+    """Display a list of all available virtual machines"""
+    usage = "list"
+
+    @classmethod
+    def invoke(cls, args):
+        """Invoke the command. Return exit code for program."""
+        vms = VirtualMachine.getAll()
+        for vm in vms:
+            try:
+                print vm.name
+            except VirtualBoxException as e:
+                if verbosityLevel > 1:
+                    errorMsg("Unknown machine: %s"%e)
+        return 0
+
+Command.register_command("list", ListCommand)
 
 class OSTypesCommand(Command):
     """Display all the available guest OS types"""
