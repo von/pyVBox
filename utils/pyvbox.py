@@ -330,7 +330,7 @@ Command.register_command("delsnapshot", DelSnapshotCommand)
 
 class EjectCommand(Command):
     """Eject a virtual machine"""
-    usage = "boot <VM name>"
+    usage = "eject <VM name>"
 
     @classmethod
     def invoke(cls, args):
