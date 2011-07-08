@@ -21,7 +21,8 @@ class Wrapper(object):
 
     def __getattr__(self, attr):
         if self._wrappedInstance and (attr in self._passthruProperties):
-            return getattr(self._wrappedInstance, attr)
+            with VirtualBoxException.ExceptionHandler():
+                return getattr(self._wrappedInstance, attr)
         raise AttributeError("Unrecognized attribute '%s'" % attr)
 
     def __setattr__(self, attr, value):
@@ -32,7 +33,8 @@ class Wrapper(object):
 
     def __delattr__(self, attr):
        if self._wrappedInstance and (attr in self._passthruProperties):
-           raise AttributeError("Cannot delete attribute '%s'" % attr)
+           with VirtualBoxException.ExceptionHandler():
+               raise AttributeError("Cannot delete attribute '%s'" % attr)
        del self.__dict__[attr]
 
             
