@@ -24,13 +24,12 @@ class MediumTests(pyVBoxTest):
         self.assertNotEqual(None, harddisk.id)
         self.assertNotEqual(None, harddisk.getIMedium())
         self.assertNotEqual(None, harddisk.name)
-        self.assertEqual(True, harddisk.isHardDisk())
         harddisk.close()
 
     def testGetType(self):
         """Test Medium.getTypeAsString()"""
         harddisk = HardDisk.open(self.testHDpath)
-        self.assertNotEqual(None, harddisk.type)
+        self.assertEqual(harddisk.deviceType, HardDisk)
 
     def testCreate(self):
         """Test Medium.create()"""

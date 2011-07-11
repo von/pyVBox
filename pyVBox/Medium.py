@@ -68,7 +68,6 @@ class Medium(Wrapper):
     _passthruProperties = [
         "autoResize",
         "description",
-        "deviceType",
         "format",
         "hostDrive",
         "id",
@@ -79,7 +78,11 @@ class Medium(Wrapper):
         "readOnly",
         "size",
         "state",
-        "type",  # TODO: Wrap me
+        "type"
+        ]
+
+    _wrappedProperties = [
+        ("deviceType", Device.from_type),
         ]
 
     _manager = VirtualBoxManager()
@@ -175,33 +178,6 @@ class Medium(Wrapper):
     def dirname(self):
         """Return the dirname of the location of the storage unit holding medium data."""
         return os.path.dirname(self.location)
-
-    #
-    # Methods for testing deviceType
-    #
-    def isFloppy(self):
-        """Is this a Floppy?"""
-        return (self.deviceType == Constants.DeviceType_Floppy)
-
-    def isCDorDVD(self):
-        """Is this a CD or DVD image?"""
-        return (self.deviceType == Constants.DeviceType_DVD)
-
-    def isHardDisk(self):
-        """Is this a HardDisk?"""
-        return (self.deviceType == Constants.DeviceType_HardDisk)
-
-    def isNetworkDevice(self):
-        """Is this a Network device?"""
-        return (self.deviceType == Constants.DeviceType_Network)
-    
-    def isUSB(self):
-        """Is this a USB device?"""
-        return (self.deviceType == Constants.DeviceType_USB)
-    
-    def isSharedFolder(self):
-        """Is this a shared folder?"""
-        return (self.deviceType == Constants.DeviceType_SharedFolder)
 
     #
     # Internal string representations 
