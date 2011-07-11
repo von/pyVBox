@@ -73,14 +73,14 @@ def print_vm(vm):
     print "  RAM: %d MB" % vm.memorySize
     print "  VRAM: %d MB" % vm.VRAMSize
     print "  Monitors: %d" % vm.monitorCount
-    devices = vm.getAttachedDevices()
-    for device in devices:
-        print "    Device: %s" % device.name
-        print "      Type: %s" % device.getTypeAsString()
-        print "      Id: %s" % device.id
-        print "      Location: %s" % device.location
-        print "      Format: %s" % device.format
-        print "      Size: %s" % device.size
+    mediums = vm.getAttachedMediums()
+    for medium in mediums:
+        print "    Medium: %s" % medium.name
+        print "      Type: %s" % medium.deviceType.str()
+        print "      Id: %s" % medium.id
+        print "      Location: %s" % medium.location
+        print "      Format: %s" % medium.format
+        print "      Size: %s" % medium.size
     snapshot = vm.getCurrentSnapshot()
     if snapshot:
         print "  Current Snapshot: %s" % snapshot.name
@@ -165,7 +165,7 @@ class AttachCommand(Command):
         for hd in args:
             hd = cls.harddisk(hd)
             verboseMsg("Attaching %s" % hd)
-            vm.attachDevice(hd)
+            vm.attachMedium(hd)
         return 0
 
 Command.register_command("attach", AttachCommand)
@@ -223,7 +223,7 @@ class BootVMCommand(Command):
             vm.register()
         for hd in args:
             hd = HardDisk.find(hd)
-            vm.attachDevice(hd)
+            vm.attachMedium(hd)
         verboseMsg("Starting VM in %s mode" % mode)
         vm.powerOn(type=mode)
         # Wait until machine is running or we have a race condition
@@ -268,7 +268,7 @@ class CloneCommand(Command):
             show_progress(progress)
             cloneHD = HardDisk.find(targetFilename)
             message("Attaching %s to %s" % (cloneHD, cloneVM))
-            cloneVM.attachDevice(cloneHD)
+            cloneVM.attachMedium(cloneHD)
         return 0
 
 Command.register_command("clone", CloneCommand)

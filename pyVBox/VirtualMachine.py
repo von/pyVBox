@@ -357,8 +357,8 @@ class VirtualMachine(Wrapper):
     # Attach methods
     #
 
-    def attachDevice(self, medium):
-        """Attachs a device. Requires an open session."""
+    def attachMedium(self, medium):
+        """Attachs a medium.."""
         with self.lock() as session:
             with VirtualBoxException.ExceptionHandler():
                 # XXX following code needs to be smarter and find appropriate
@@ -375,8 +375,8 @@ class VirtualMachine(Wrapper):
                                                    medium.getIMedium())
                 session.saveSettings()
 
-    def detachDevice(self, device):
-        """Detach the device from the machine."""
+    def detachMedium(self, device):
+        """Detach the medium from the machine."""
         with self.lock() as session:
             with VirtualBoxException.ExceptionHandler():
                 attachment = self._findMediumAttachment(device)
@@ -385,8 +385,8 @@ class VirtualMachine(Wrapper):
                                                    attachment.device)
                 session.saveSettings()
 
-    def detachAllDevices(self):
-        """Detach all devices from the machine."""
+    def detachAllMediums(self):
+        """Detach all mediums from the machine."""
         with self.lock() as session:
             with VirtualBoxException.ExceptionHandler():
                 attachments = self._getMediumAttachments()
@@ -396,7 +396,7 @@ class VirtualMachine(Wrapper):
                                                        attachment.device)
                     session.saveSettings()
 
-    def getAttachedDevices(self):
+    def getAttachedMediums(self):
         """Return array of attached Medium instances."""
         with self.lock() as session:
             mediums = []
@@ -408,7 +408,7 @@ class VirtualMachine(Wrapper):
             return mediums
 
     def getHardDrives(self):
-        """Return array of attached HardDrive instances."""
+        """Return array of Medium instances representing attached HardDrives."""
         return filter(lambda d: d.isHardDisk(), self.getAttachedDevices())
 
     #

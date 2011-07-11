@@ -50,16 +50,16 @@ class VirtualMachineTests(pyVBoxTest):
         machine.unregister()
         self.assertEqual(False, machine.isRegistered())
 
-    def testAttachDevice(self):
-        """Test VirtualMachine.attachDevice() and related functions"""
+    def testAttachMedium(self):
+        """Test VirtualMachine.attachMedium() and related functions"""
         machine = VirtualMachine.open(self.testVMpath)
         machine.register()
         harddisk = HardDisk.open(self.testHDpath)
-        machine.attachDevice(harddisk)
-        mediums = machine.getAttachedDevices()
+        machine.attachMedium(harddisk)
+        mediums = machine.getAttachedMediums()
         self.assertEqual(1, len(mediums))
         self.assertEqual(mediums[0].deviceType, HardDisk)
-        machine.detachDevice(harddisk)
+        machine.detachMedium(harddisk)
         machine.unregister()
         harddisk.close()
 
@@ -69,7 +69,7 @@ class VirtualMachineTests(pyVBoxTest):
         machine.register()
         self.assertEqual(True, machine.isRegistered())
         harddisk = HardDisk.open(self.testHDpath)
-        machine.attachDevice(harddisk)
+        machine.attachMedium(harddisk)
         machine.eject()
         self.assertEqual(False, machine.isRegistered())
         harddisk.close()
@@ -79,12 +79,12 @@ class VirtualMachineTests(pyVBoxTest):
         machine = VirtualMachine.open(self.testVMpath)
         machine.register()
         harddisk = HardDisk.open(self.testHDpath)
-        machine.attachDevice(harddisk)
+        machine.attachMedium(harddisk)
         machine.powerOn(type="vrdp")
         machine.waitUntilRunning()
         sleep(5)
         machine.powerOff(wait=True)
-        machine.detachDevice(harddisk)
+        machine.detachMedium(harddisk)
         harddisk.close()
         machine.unregister()
 
@@ -95,7 +95,7 @@ class VirtualMachineTests(pyVBoxTest):
         machine.register()
         self.assertEqual(None, machine.getCurrentSnapshot())
         # This sleep seems to keep takeSnapshot() from hangin
-        sleep(1)
+        sleep(2)
         machine.takeSnapshot(snapshotName)
         snapshot = machine.getCurrentSnapshot()
         self.assertNotEqual(snapshot, None)
