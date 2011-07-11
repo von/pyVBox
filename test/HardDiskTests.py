@@ -27,9 +27,6 @@ class HardDiskTests(pyVBoxTest):
 
     def testFind(self):
         """Test HardDisk.find()"""
-        self.assertRaises(
-            VirtualBoxObjectNotFoundException,
-            HardDisk.find, self.bogusHDpath)
         self.assertEqual(False, HardDisk.isRegistered(self.testHDpath))
         harddisk = HardDisk.open(self.testHDpath)
         self.assertEqual(True, HardDisk.isRegistered(self.testHDpath))
@@ -37,6 +34,12 @@ class HardDiskTests(pyVBoxTest):
         self.assertEqual(harddisk.id, hd.id)
         harddisk.close()
         self.assertEqual(False, HardDisk.isRegistered(self.testHDpath))
+
+    def testFindNotFound(self):
+        """Test HardDisk.find() with not found file"""
+        self.assertRaises(
+            VirtualBoxObjectNotFoundException,
+            HardDisk.find, self.bogusHDpath)
 
 if __name__ == '__main__':
     main()
