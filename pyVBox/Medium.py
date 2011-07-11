@@ -1,11 +1,67 @@
 """Wrapper around IMedium object"""
 
 from Progress import Progress
+import UUID
 import VirtualBoxException
 from VirtualBoxManager import Constants, VirtualBoxManager
 from Wrapper import Wrapper
 
 import os.path
+
+class Device(object):
+    """Abstract class to be used as parent for actual classes.
+
+    type is DeviceType constant (e.g. Constants.DeviceType_DVD).
+
+    medium is associated medium, may be None for removable mediums."""
+    type = None
+    _type_str = "undefined device"
+
+    @classmethod
+    def from_type(cls, type):
+        """Given a type, return appropriate class"""
+        for sub in cls.__subclasses__():
+            if type == sub.type:
+                return sub
+        raise ValueError("Unknown type \"%s\"" % type)
+
+    #
+    # Medium creation methods
+    #
+    @classmethod
+    def open(cls, path, accessMode = None):
+        """Open an instance of medium for the given device."""
+        return Medium.open(path, cls.type, accessMode)
+
+    @classmethod
+    def find(cls, path):
+        """Find a medium for type using given path or UUID."""
+        return Medium.find(path, cls.type)
+
+    @classmethod
+    def str(cls):
+        return cls._type_str
+
+class Floppy(Device):
+    type = Constants.DeviceType_Floppy
+    _type_str = "floppy"
+
+class DVD(Device):
+    type = Constants.DeviceType_DVD
+    _type_str = "DVD"
+
+class NetworkDevice(Device):
+    type = Constants.DeviceType_Network
+    _type_str = "network device"
+
+class USBDevice(Device):
+    type = Constants.DeviceType_USB
+    _type_str = "USB device"
+
+class SharedFolder(Device):
+    type = Constants.DeviceType_SharedFolder
+    _type_str = "shared folder"
+    
 
 class Medium(Wrapper):
     # Properties directly inherited from IMedium
@@ -23,19 +79,10 @@ class Medium(Wrapper):
         "readOnly",
         "size",
         "state",
-        "type",
+        "type",  # TODO: Wrap me
         ]
 
     _manager = VirtualBoxManager()
-
-    DEVICE_MAPPINGS = {
-        Constants.DeviceType_Floppy       : "floppy drive",
-        Constants.DeviceType_DVD          : "DVD",
-        Constants.DeviceType_HardDisk     : "hard drive",
-        Constants.DeviceType_Network      : "network device",
-        Constants.DeviceType_USB          : "USB device",
-        Constants.DeviceType_SharedFolder  : "shared folder",
-        }
 
     def __init__(self, imedium):
         """Return a Medium wrapper around given IMedium instance"""
@@ -45,6 +92,30 @@ class Medium(Wrapper):
     #
     # Creation methods
     #
+    @classmethod
+    def open(cls, path, deviceType, accessMode = None):
+        """Opens a medium from an existing location.
+
+        Throws VirtualBoxFileError if file not found."""
+        with VirtualBoxException.ExceptionHandler():
+            if accessMode is None:
+                accessMode = Constants.AccessMode_ReadWrite
+            # path must be absolute path
+            path = cls._canonicalizeMediumPath(path)
+            medium = cls._getVBox().openMedium(path,
+                                               deviceType,
+                                               accessMode)
+        return Medium(medium)
+
+    @classmethod
+    def find(cls, path, deviceType):
+        """Returns a medium that uses the given path or UUID to store medium data."""
+        with VirtualBoxException.ExceptionHandler():
+            if not UUID.isUUID(path):
+                path = cls._canonicalizeMediumPath(path)
+            medium = cls._getVBox().findMedium(path, deviceType)
+        return Medium(medium)
+
     def clone(self, path, newUUID=True, wait=True):
         """Create a clone of this medium at the given location.
 
@@ -104,12 +175,6 @@ class Medium(Wrapper):
     def dirname(self):
         """Return the dirname of the location of the storage unit holding medium data."""
         return os.path.dirname(self.location)
-
-    def getTypeAsString(self):
-        """Return a human-readable string describing the type of device"""
-        if not self.DEVICE_MAPPINGS.has_key(self.deviceType):
-            return "unknown device type"
-        return self.DEVICE_MAPPINGS[self.deviceType]
 
     #
     # Methods for testing deviceType

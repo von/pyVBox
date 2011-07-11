@@ -1,6 +1,5 @@
 """Wrapper around IMachine object"""
 
-from Glue import IMediumToMedium
 from Medium import Medium
 from MediumAttachment import MediumAttachment
 from Progress import Progress
@@ -405,7 +404,7 @@ class VirtualMachine(Wrapper):
                 attachments = self._getMediumAttachments()
                 attachments = filter(lambda a: a.medium is not None,
                                      attachments)
-                mediums = [IMediumToMedium(a.medium) for a in attachments]
+                mediums = [Medium(a.medium) for a in attachments]
             return mediums
 
     def getHardDrives(self):

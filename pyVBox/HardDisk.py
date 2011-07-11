@@ -1,39 +1,11 @@
 """Presentation of Medium representing HardDisk"""
 
-from Medium import Medium
-import UUID
-import VirtualBoxException
+from Medium import Device
+from VirtualBoxException import VirtualBoxObjectNotFoundException
 from VirtualBoxManager import Constants
 
-class HardDisk(Medium):
-
-    #
-    # Creation metods
-    #
-    @classmethod
-    def open(cls, path, accessMode = None):
-        """Opens a hard disk from an existing location, optionally replacing the image UUID and/or parent UUID.
-
-        Throws VirtualBoxFileError if file not found."""
-        with VirtualBoxException.ExceptionHandler():
-            if accessMode is None:
-                accessMode = Constants.AccessMode_ReadWrite
-            # path must be absolute path
-            path = cls._canonicalizeMediumPath(path)
-            medium = cls._getVBox().openMedium(path,
-                                               Constants.DeviceType_HardDisk,
-                                               accessMode)
-        return HardDisk(medium)
-
-    @classmethod
-    def find(cls, path):
-        """Returns a hard disk that uses the given path or UUID to store medium data."""
-        with VirtualBoxException.ExceptionHandler():
-            if not UUID.isUUID(path):
-                path = cls._canonicalizeMediumPath(path)
-            medium = cls._getVBox().findMedium(path,
-                                               Constants.DeviceType_HardDisk)
-        return HardDisk(medium)
+class HardDisk(Device):
+    type = Constants.DeviceType_HardDisk
 
     #
     # Utility methods
@@ -43,8 +15,7 @@ class HardDisk(Medium):
         """Is a hard disk at the given path already registered?"""
         try:
             cls.find(path)
-        except Exception, e:
-            # XXX Should verify exception is what is expected
+        except VirtualBoxObjectNotFoundException, e:
             return False
         return True
 
