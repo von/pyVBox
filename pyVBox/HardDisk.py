@@ -6,6 +6,7 @@ from VirtualBoxManager import Constants
 
 class HardDisk(Device):
     type = Constants.DeviceType_HardDisk
+    _type_str = "hard disk"
 
     #
     # Utility methods
