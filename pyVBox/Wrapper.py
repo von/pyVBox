@@ -13,16 +13,28 @@ class Wrapper(object):
     set, but not deleted. In general, these should be properties that are
     native Python types, other properties should be wrapped.
 
+    _wrappedProperties is a list of tuples. When the attribute named
+    by the first element is accessed, function or class in the second
+    element is invoked with the property as an argument and the result is
+    returned.
+
     Utilizing this class since I don't kow how to inherit the XPCOM
     classes directly.
     """
     _wrappedInstance = None
     _passthruProperties = []
+    _wrappedProperties = []
 
     def __getattr__(self, attr):
-        if self._wrappedInstance and (attr in self._passthruProperties):
-            with VirtualBoxException.ExceptionHandler():
-                return getattr(self._wrappedInstance, attr)
+        if self._wrappedInstance:
+            if attr in self._passthruProperties:
+                with VirtualBoxException.ExceptionHandler():
+                    return getattr(self._wrappedInstance, attr)
+            for prop, func in self._wrappedProperties:
+                if prop == attr:
+                    with VirtualBoxException.ExceptionHandler():
+                        value = getattr(self._wrappedInstance, attr)
+                    return func(value)
         raise AttributeError("Unrecognized attribute '%s'" % attr)
 
     def __setattr__(self, attr, value):
