@@ -359,6 +359,11 @@ class VirtualMachine(Wrapper):
 
     def attachMedium(self, medium):
         """Attachs a medium.."""
+        self.attachDevice(medium.deviceType, medium)
+
+    def attachDevice(self, device, medium=None):
+        """Attaches a Device and optionally a Medium."""
+        imedium = medium.getIMedium() if medium else None
         with self.lock() as session:
             with VirtualBoxException.ExceptionHandler():
                 # XXX following code needs to be smarter and find appropriate
@@ -366,13 +371,12 @@ class VirtualMachine(Wrapper):
                 storageControllers = self._getStorageControllers()
                 storageController = storageControllers[0]
                 controllerPort = 0
-                device = 0
-                deviceType = Constants.DeviceType_HardDisk
+                deviceNum = 0
                 session.getIMachine().attachDevice(storageController.name,
                                                    controllerPort,
-                                                   device,
-                                                   deviceType,
-                                                   medium.getIMedium())
+                                                   deviceNum,
+                                                   device.type,
+                                                   imedium)
                 session.saveSettings()
 
     def detachMedium(self, device):

@@ -50,6 +50,14 @@ class VirtualMachineTests(pyVBoxTest):
         machine.unregister()
         self.assertEqual(False, machine.isRegistered())
 
+    def testAttachDevice(self):
+        """Test VirtualMachine.attachDevice()"""
+        from pyVBox import DVD
+        machine = VirtualMachine.open(self.testVMpath)
+        machine.register()
+        machine.attachDevice(DVD)
+        machine.unregister()
+
     def testAttachMedium(self):
         """Test VirtualMachine.attachMedium() and related functions"""
         machine = VirtualMachine.open(self.testVMpath)
