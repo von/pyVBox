@@ -1,6 +1,6 @@
 """Wrapper around IMediumAttachment"""
 
-from Medium import Medium
+from Medium import Medium, Device
 from Wrapper import Wrapper
 
 class MediumAttachment(Wrapper):
@@ -9,24 +9,17 @@ class MediumAttachment(Wrapper):
         "controller",
         "port",
         "device",
-        "type",
         "passthrough",
         "bandwidthGroup",  # Wrap some day
+        ]
+
+    _wrappedProperties = [
+        ( "medium", Medium ),
+        ( "type", Device.from_type ),
         ]
 
     def __init__(self, mediumAttachment):
         """Return a MediumAttachment around the given IMediumAttachment instance"""
         assert(mediumAttachment is not None)
         self._wrappedInstance = mediumAttachment
-
-    def __getattr__(self, attr):
-        if attr == "medium":
-            imedium = getattr(self._wrappedInstance, attr)
-            if imedium:
-                return Medium(imedium)
-            else:
-                return None
-        else:
-            return Wrapper.__getattr__(self, attr)
-            
         

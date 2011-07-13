@@ -3,7 +3,10 @@
 
 from pyVBoxTest import pyVBoxTest, main
 from pyVBox import Constants
+from pyVBox import Device
+from pyVBox import DVD
 from pyVBox import MediumAttachment
+from pyVBox import StorageController
 from pyVBox import VirtualMachine
 
 class MediumAttachmentTests(pyVBoxTest):
@@ -22,7 +25,9 @@ class MediumAttachmentTests(pyVBoxTest):
             self.assertEqual(None, attachment.medium)
             self.assertNotEqual(None, attachment.port)
             self.assertNotEqual(None, attachment.device)
-            self.assertEqual(attachment.type, Constants.DeviceType_DVD)
+            self.assertNotEqual(None, attachment.type)
+            self.assertTrue(isinstance(attachment.type, Device))
+            self.assertTrue(isinstance(attachment.type, DVD))
             self.assertNotEqual(None, attachment.passthrough)
             # bandwidthGroup can apparently be None too
 
