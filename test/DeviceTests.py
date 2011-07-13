@@ -11,42 +11,41 @@ class DeviceTests(pyVBoxTest):
         """Test Device class"""
         from pyVBox import Device
         self.assertEqual(Device.type, None)
-        self.assertEqual(Device.str(), "undefined device")
 
     def testFloppy(self):
         """Test Floppy"""
         from pyVBox import Device, Floppy
-        self.assertEqual(Device.from_type(Constants.DeviceType_Floppy),
-                         Floppy)
-        self.assertEqual(Floppy.str(), "floppy")
+        floppy = Device.from_type(Constants.DeviceType_Floppy)
+        self.assertTrue(isinstance(floppy, Floppy))
+        self.assertEqual(str(floppy), "floppy")
 
     def testDVD(self):
         """Test DVD"""
         from pyVBox import Device, DVD
-        self.assertEqual(Device.from_type(Constants.DeviceType_DVD),
-                         DVD)
-        self.assertEqual(DVD.str(), "DVD")
+        dvd = Device.from_type(Constants.DeviceType_DVD)
+        self.assertTrue(isinstance(dvd, DVD))
+        self.assertEqual(str(dvd), "DVD")
 
     def testNetworkDevice(self):
         """Test NetworkDevice"""
         from pyVBox import Device, NetworkDevice
-        self.assertEqual(Device.from_type(Constants.DeviceType_Network),
-                         NetworkDevice)
-        self.assertEqual(NetworkDevice.str(), "network device")
+        nd = Device.from_type(Constants.DeviceType_Network)
+        self.assertTrue(isinstance(nd, NetworkDevice))
+        self.assertEqual(str(nd), "network device")
 
     def testUSBDevice(self):
         """Test USBDevice"""
         from pyVBox import Device, USBDevice
-        self.assertEqual(Device.from_type(Constants.DeviceType_USB),
-                         USBDevice)
-        self.assertEqual(USBDevice.str(), "USB device")
+        usb = Device.from_type(Constants.DeviceType_USB)
+        self.assertTrue(isinstance(usb, USBDevice))
+        self.assertEqual(str(usb), "USB device")
 
     def testNetworkDevice(self):
         """Test SharedFolder"""
         from pyVBox import Device, SharedFolder
-        self.assertEqual(Device.from_type(Constants.DeviceType_SharedFolder),
-                         SharedFolder)
-        self.assertEqual(SharedFolder.str(), "shared folder")
+        folder = Device.from_type(Constants.DeviceType_SharedFolder)
+        self.assertTrue(isinstance(folder, SharedFolder))
+        self.assertEqual(str(folder), "shared folder")
 
 if __name__ == '__main__':
     main()

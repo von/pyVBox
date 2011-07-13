@@ -29,7 +29,7 @@ class MediumTests(pyVBoxTest):
     def testGetType(self):
         """Test Medium.getTypeAsString()"""
         harddisk = HardDisk.open(self.testHDpath)
-        self.assertEqual(harddisk.deviceType, HardDisk)
+        self.assertTrue(isinstance(harddisk.deviceType, HardDisk))
 
     def testCreate(self):
         """Test Medium.create()"""

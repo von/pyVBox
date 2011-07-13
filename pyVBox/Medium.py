@@ -22,7 +22,7 @@ class Device(object):
         """Given a type, return appropriate class"""
         for sub in cls.__subclasses__():
             if type == sub.type:
-                return sub
+                return sub()
         raise ValueError("Unknown type \"%s\"" % type)
 
     #
@@ -38,9 +38,11 @@ class Device(object):
         """Find a medium for type using given path or UUID."""
         return Medium.find(path, cls.type)
 
-    @classmethod
-    def str(cls):
-        return cls._type_str
+    def __str__(self):
+        return self._type_str
+
+    def __unicode__(self):
+        return self._type_str
 
 class Floppy(Device):
     type = Constants.DeviceType_Floppy
