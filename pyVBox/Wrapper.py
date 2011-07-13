@@ -34,7 +34,7 @@ class Wrapper(object):
                 if prop == attr:
                     with VirtualBoxException.ExceptionHandler():
                         value = getattr(self._wrappedInstance, attr)
-                    return func(value)
+                    return func(value) if value else None
         raise AttributeError("Unrecognized attribute '%s'" % attr)
 
     def __setattr__(self, attr, value):
