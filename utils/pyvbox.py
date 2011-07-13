@@ -73,14 +73,19 @@ def print_vm(vm):
     print "  RAM: %d MB" % vm.memorySize
     print "  VRAM: %d MB" % vm.VRAMSize
     print "  Monitors: %d" % vm.monitorCount
-    mediums = vm.getAttachedMediums()
-    for medium in mediums:
-        print "    Medium: %s" % medium.name
-        print "      Type: %s" % medium.deviceType.str()
-        print "      Id: %s" % medium.id
-        print "      Location: %s" % medium.location
-        print "      Format: %s" % medium.format
-        print "      Size: %s" % medium.size
+    attachments = vm.getMediumAttachments()
+    for attachment in attachments:
+        medium = attachment.medium
+        type = attachment.type
+        print "  Device: %s" % type
+        if medium:
+            print "    Medium: %s" % medium.name
+            print "    Id: %s" % medium.id
+            print "    Location: %s" % medium.location
+            print "    Format: %s" % medium.format
+            print "    Size: %s" % medium.size
+        print "    Controller: %s Port: %d" % (attachment.controller,
+                                                 attachment.port)
     snapshot = vm.getCurrentSnapshot()
     if snapshot:
         print "  Current Snapshot: %s" % snapshot.name
