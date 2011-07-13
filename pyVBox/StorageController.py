@@ -19,3 +19,10 @@ class StorageController(Wrapper):
         """Return a StorageController around the given IStorageController instance"""
         assert(storageController is not None)
         self._wrappedInstance = storageController
+
+    def __str__(self):
+        return self.name
+
+    def __unicode__(self):
+        return self.name
+

@@ -23,6 +23,7 @@ class StorageControllerTests(pyVBoxTest):
             self.assertNotEqual(None, controller.maxPortCount)
             self.assertNotEqual(None, controller.minPortCount)
             self.assertNotEqual(None, controller.portCount)
+            self.assertNotEqual(None, str(controller))
 
 if __name__ == '__main__':
     main()
