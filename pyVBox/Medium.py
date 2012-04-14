@@ -83,6 +83,7 @@ class Medium(Wrapper):
         "type"
         ]
 
+    # These properties are converted by given function before being returned.
     _wrappedProperties = [
         ("deviceType", Device.from_type),
         ]
