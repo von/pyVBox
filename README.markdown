@@ -9,11 +9,11 @@ to hide those changes. The software also includes a script,
 utils/pyVbox.py, that provides the ability to manipulate VMs (like
 VBoxMange).
 
-This code is written to the 3.1 version of VirtualBox (3.1.6
+This code is written to the 4.1 version of VirtualBox (4.1.8
 specifically). I have not tried it against any other version.
 
-This software is independently created from VirtualBox and Sun. No
-endorsement by Sun or the VirtualBox authors is implied.
+This software is independently created from VirtualBox and Oracle. No
+endorsement by Oracle or the VirtualBox authors is implied.
 
 Use at your own risk. No support guarenteed, but I'm happy to receive
 bug reports or suggestions (open an issue please).
@@ -55,7 +55,7 @@ what comes next.
 # Installing vboxapi
 
 pyVBox relies on the vboxapi that comes with the VirtualBox SDK from
-Sun. You must install it first before trying to use pyVBox.
+Oracle. You must install it first before trying to use pyVBox.
 
 1. Download and install VirtualBox from [the VirtualBox downloads page](http://www.virtualbox.org/wiki/Downloads).
 
