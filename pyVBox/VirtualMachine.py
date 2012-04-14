@@ -459,11 +459,12 @@ class VirtualMachine(Wrapper):
         return StorageController(controller)
 
     def removeStorageController(self, name):
-        """Removes a storage controller from the machine.
-
-        Currently I'm getting a Operation aborted error invoking this method"""
-        with VirtualBoxException.ExceptionHandler():
-            self.getIMachine().removeStorageController(name)
+        """Removes a storage controller from the machine."""
+        with self.lock() as session:
+            with VirtualBoxException.ExceptionHandler():
+                mutableMachine = session.getMachine()
+                mutableMachine.getIMachine().removeStorageController(name)
+            session.saveSettings()
 
     def doesStorageControllerExist(self, name):
         """Return boolean indicating if StorageController with given name exists"""

@@ -176,9 +176,9 @@ class VirtualMachineTests(pyVBoxTest):
         # an 'Operation aborted' and the test VM fails to boot if I leave
         # the added storage controllers, which messes up subsequent tests.
         # Issue: https://github.com/von/pyVBox/issues/2
-        return
         controllerName="TestController"
         machine = VirtualMachine.open(self.testVMpath)
+        machine.register()
         controller = machine.addStorageController(Constants.StorageBus_SCSI,
                                                   name=controllerName)
         self.assertNotEqual(None, controller)
@@ -186,8 +186,10 @@ class VirtualMachineTests(pyVBoxTest):
         self.assertEqual(True,
                          machine.doesStorageControllerExist(controller.name))
         machine.removeStorageController(controller.name)
+        # Trying to use controller.name after remove fails.
+        # Not sure if that's a bug or not.
         self.assertEqual(False,
-                         machine.doesStorageControllerExist(controller.name))
+                         machine.doesStorageControllerExist(controllerName))
 
     def testSetAttr(self):
         """Set setting of VirtualMachine attributes"""
