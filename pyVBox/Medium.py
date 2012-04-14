@@ -9,11 +9,12 @@ from Wrapper import Wrapper
 import os.path
 
 class Device(object):
-    """Abstract class to be used as parent for actual classes.
+    """Abstract class wrapping DeviceType
+
+    Provides convienence functions for associcated Mediums.
 
     type is DeviceType constant (e.g. Constants.DeviceType_DVD).
-
-    medium is associated medium, may be None for removable mediums."""
+    """
     type = None
     _type_str = "undefined device"
 
