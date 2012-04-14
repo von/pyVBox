@@ -23,7 +23,7 @@ class Device(object):
         for sub in cls.__subclasses__():
             if type == sub.type:
                 return sub()
-        raise ValueError("Unknown type \"%s\"" % type)
+        raise ValueError("Unknown Device type \"%d\"" % type)
 
     #
     # Medium creation methods
