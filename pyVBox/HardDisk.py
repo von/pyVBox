@@ -4,9 +4,42 @@ from Medium import Device
 from VirtualBoxException import VirtualBoxObjectNotFoundException
 from VirtualBoxManager import Constants
 
-class HardDisk(Device):
-    type = Constants.DeviceType_HardDisk
-    _type_str = "hard disk"
+class HardDisk(Medium):
+
+    #
+    # Creation metods
+    #
+    @classmethod
+    def open(cls, path, accessMode = None, forceNewUuid = False):
+        """Opens a hard disk from an existing location, optionally replacing the image UUID and/or parent UUID.
+
+        Throws VirtualBoxFileError if file not found."""
+        try:
+            if accessMode is None:
+                accessMode = Constants.AccessMode_ReadWrite
+            # path must be absolute path
+            path = cls._canonicalizeMediumPath(path)
+            medium = cls._getVBox().openMedium(path,
+                                               Constants.DeviceType_HardDisk,
+                                               accessMode,
+                                               forceNewUuid)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        return HardDisk(medium)
+
+    @classmethod
+    def find(cls, path):
+        """Returns a hard disk that uses the given path or UUID to store medium data."""
+        try:
+            if not UUID.isUUID(path):
+                path = cls._canonicalizeMediumPath(path)
+            medium = cls._getVBox().findMedium(path,
+                                               Constants.DeviceType_HardDisk)
+        except Exception, e:
+            VirtualBoxException.handle_exception(e)
+            raise
+        return HardDisk(medium)
 
     #
     # Utility methods
