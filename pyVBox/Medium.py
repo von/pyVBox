@@ -99,7 +99,7 @@ class Medium(Wrapper):
     # Creation methods
     #
     @classmethod
-    def open(cls, path, deviceType, accessMode = None):
+    def open(cls, path, deviceType, accessMode = None, forceNewUuid=False):
         """Opens a medium from an existing location.
 
         Throws VirtualBoxFileError if file not found."""
@@ -110,7 +110,8 @@ class Medium(Wrapper):
             path = cls._canonicalizeMediumPath(path)
             medium = cls._getVBox().openMedium(path,
                                                deviceType,
-                                               accessMode)
+                                               accessMode,
+                                               forceNewUuid)
         return Medium(medium)
 
     @classmethod
