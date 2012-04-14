@@ -60,6 +60,9 @@ XPCOM_E_OBJECT_NOT_READY = 0x80070005
 # Returned if VirtualMachine.memorySize is set out of range
 XPCOM_E_INVALID_ARGUMENT = 0x80070057
 
+# "Call to remote object failed"
+NS_ERROR_CALL_FAILED = 0x800706be
+
 # Returned when getting machine attribute from closed session
 VBOX_E_SESSION_CLOSED = 0x8000ffff
 
@@ -133,6 +136,10 @@ class VirtualBoxOperationAborted(VirtualBoxException):
     """Operation aborted."""
     errno = VBOX_E_ERROR_ABORT
 
+class VirtualBoxCallFailed(VirtualBoxException):
+    """Call to remot object failed."""
+    errno = NS_ERROR_CALL_FAILED
+
 # Mappings from VirtualBox error numbers to pyVBox classes
 EXCEPTION_MAPPINGS = {
     VBOX_E_OBJECT_NOT_FOUND      : VirtualBoxObjectNotFoundException,
@@ -152,6 +159,7 @@ EXCEPTION_MAPPINGS = {
     XPCOM_E_OBJECT_NOT_READY     : VirtualBoxObjectNotReady,
     XPCOM_E_INVALID_ARGUMENT     : VirtualBoxInvalidArgument,
     VBOX_E_SESSION_CLOSED        : VirtualBoxInvalidVMStateException,
+    NS_ERROR_CALL_FAILED         : VirtualBoxCallFailed,
     }
 
 
