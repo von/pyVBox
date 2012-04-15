@@ -1,5 +1,6 @@
 """Wrapper around IMachine object"""
 
+from HardDisk import HardDisk
 from Medium import Medium
 from MediumAttachment import MediumAttachment
 from Progress import Progress
@@ -413,7 +414,8 @@ class VirtualMachine(Wrapper):
 
     def getHardDrives(self):
         """Return array of Medium instances representing attached HardDrives."""
-        return filter(lambda d: d.isHardDisk(), self.getAttachedDevices())
+        return filter(lambda m: m.deviceType == HardDisk,
+                      self.getAttachedMediums())
 
     #
     # MediumAttachment methods

@@ -148,6 +148,23 @@ class VirtualMachineTests(pyVBoxTest):
         self.assertNotEqual(None, osType.id)
         self.assertNotEqual(None, osType.description)        
 
+    def testGetHardDrives(self):
+        """Test VirtualMachine.getHardDrives() method"""
+        machine = VirtualMachine.open(self.testVMpath)
+        machine.register()
+        # Attach something so it's interesting
+        harddisk = HardDisk.open(self.testHDpath)
+        machine.attachMedium(harddisk)
+        mediums = machine.getAttachedMediums()
+        self.assertEqual(1, len(mediums))
+        self.assertEqual(mediums[0].deviceType, HardDisk)
+        hds = machine.getHardDrives()
+        self.assertNotEqual(hds, None)
+        self.assertTrue(isinstance(hds, list))
+        self.assertEqual(len(hds), 1)
+        machine.detachMedium(harddisk)
+        machine.unregister()
+
     def testCreate(self):
         """Test VirtualMachine.create() method"""
         # If VM already exists and we don't specify forceOverwrite=True
