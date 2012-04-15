@@ -524,11 +524,17 @@ class VMCommand(Command):
             vms = VirtualMachine.getAll()
             verboseMsg("Registered VMs:")
             for vm in vms:
-                print "\t%s" % vm
+                try:
+                    print "\t%s" % vm
+                except Exception as e:
+                    errorMsg("Could not display VM: %s" % str(e))
         else:
             for vmName in args:
-                vm = VirtualMachine.find(vmName)
-                print_vm(vm)
+                try:
+                    vm = VirtualMachine.find(vmName)
+                    print_vm(vm)
+                except Exception as e:
+                    errorMsg("Could not display information about VM \"%s\": %s" % (vmName, str(e)))
 
 Command.register_command("vm", VMCommand)
 
