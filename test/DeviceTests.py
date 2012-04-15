@@ -12,6 +12,46 @@ class DeviceTests(pyVBoxTest):
         from pyVBox import Device
         self.assertEqual(Device.type, None)
 
+    def testFromType(self):
+        """Test Device.from_type()"""
+        from pyVBox import Device, DVD, Floppy, \
+            HardDisk, NetworkDevice, USBDevice, SharedFolder
+        self.assertTrue(
+            isinstance(Device.from_type(Constants.DeviceType_Floppy),
+                       Floppy))
+        self.assertTrue(
+            isinstance(Device.from_type(Constants.DeviceType_DVD),
+                       DVD))
+        self.assertTrue(
+            isinstance(Device.from_type(Constants.DeviceType_Network),
+                       NetworkDevice))
+        self.assertTrue(
+            isinstance(Device.from_type(Constants.DeviceType_USB),
+                       USBDevice))
+        self.assertTrue(
+            isinstance(Device.from_type(Constants.DeviceType_SharedFolder),
+                       SharedFolder))
+
+    def testClassFromType(self):
+        """Test Device.class_from_type()"""
+        from pyVBox import Device, DVD, Floppy, \
+            HardDisk, NetworkDevice, USBDevice, SharedFolder
+        self.assertEqual(
+            Device.class_from_type(Constants.DeviceType_Floppy),
+            Floppy)
+        self.assertEqual(
+            Device.class_from_type(Constants.DeviceType_DVD),
+            DVD)
+        self.assertEqual(
+            Device.class_from_type(Constants.DeviceType_Network),
+            NetworkDevice)
+        self.assertEqual(
+            Device.class_from_type(Constants.DeviceType_USB),
+            USBDevice)
+        self.assertEqual(
+            Device.class_from_type(Constants.DeviceType_SharedFolder),
+            SharedFolder)
+
     def testFloppy(self):
         """Test Floppy"""
         from pyVBox import Device, Floppy

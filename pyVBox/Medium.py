@@ -19,12 +19,18 @@ class Device(object):
     _type_str = "undefined device"
 
     @classmethod
-    def from_type(cls, type):
+    def class_from_type(cls, type):
         """Given a type, return appropriate class"""
-        for sub in cls.__subclasses__():
-            if type == sub.type:
-                return sub()
+        for cls in cls.__subclasses__():
+            if type == cls.type:
+                return cls
         raise ValueError("Unknown Device type \"%d\"" % type)
+
+    @classmethod
+    def from_type(cls, type):
+        """Given a type, return appropriate instance"""
+        cls = cls.class_from_type(type)
+        return cls()
 
     #
     # Medium creation methods
@@ -86,7 +92,7 @@ class Medium(Wrapper):
 
     # These properties are converted by given function before being returned.
     _wrappedProperties = [
-        ("deviceType", Device.from_type),
+        ("deviceType", Device.class_from_type),
         ]
 
     _manager = VirtualBoxManager()
